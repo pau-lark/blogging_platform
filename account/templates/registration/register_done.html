@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block title %}Регистрация{% endblock %}
+
+{% block content %}
+    <div class="col-sm-9 col-md-7 col-lg-5 mx-auto">
+        <div class="card border-0 shadow rounded-3 my-5">
+            <div class="card-body p-4 p-sm-5 text-center">
+                <h5 class="card-title text-center mb-5">Пользователь успешно зарегистрирован</h5>
+                <a href="{% url 'login' %}">Войти на сайт</a>
+            </div>
+        </div>
+    </div>
+{% endblock content %}

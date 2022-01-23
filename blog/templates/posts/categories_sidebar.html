@@ -1,0 +1,16 @@
+<div class="card mb-4">
+    <div class="list-group list-group-flush selected">
+        <a class="list-group-item list-group-item-action list-group-item-light p-2
+                    {% if not category %}active{% endif %}"
+            href="{% url 'blog:post_list' %}">
+                Все статьи
+        </a>
+        {% for category_item in categories %}
+            <a class="list-group-item list-group-item-action list-group-item-light p-2
+                        {% if category_item == category %}active{% endif %}"
+                href="{% url 'blog:post_list_by_category' category_item.slug %}">
+                    {{ category_item.title }}
+            </a>
+        {% endfor %}
+    </div>
+</div>

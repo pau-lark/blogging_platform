@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Авторы{% endblock %}
+
+{% block content %}
+    <div class="card mb-4">
+        <div class="list-group-horizontal d-flex justify-content-around">
+            <a href="#" class="text-center link-dark list-group-item-action list-group-item-light p-2 active">
+                По количеству постов</a>
+            <a href="#" class="text-center link-dark list-group-item-action list-group-item-light p-2">
+                По подписчикам</a>
+            <a href="#" class="text-center link-dark list-group-item-action list-group-item-light p-2">
+                По рейтингу</a>
+        </div>
+    </div>
+    {% for author in authors %}
+    <div class="user-card mb-4">
+        <div class="col-3">
+            {% if author.photo %}
+                <a href="{{ author.get_absolute_url }}">
+                    <img class="img-thumbnail" src="{{ author.image.url }}" alt="">
+                </a>
+            {% else %}
+                <img class="img-thumbnail" src="{% static 'images/no-image.jpg' %}" alt="">
+            {% endif %}
+        </div>
+        <div class="card-body col-6 px-4">
+            <a href="{{ author.get_absolute_url }}" class="link-dark">
+                <h2 class="card-title">{{ author.username }}</h2>
+            </a>
+            <div class="small text-muted">Постов: {{ author.posts.count }}</div>
+            <p class="card-text">Рейтинг: <strong>Дохуя</strong></p>
+        </div>
+        <div class="card-body col-3"><a class="btn btn-dark" href="{{ post.get_absolute_url }}">Подписаться</a></div>
+    </div>
+    {% endfor %}
+{% endblock %}
+
+{% block sidebar %}
+    <div class="card mb-4">
+        <div class="list-group d-flex justify-content-around">
+            <a href="#" class="text-center link-dark list-group-item-action list-group-item-light p-2 active">
+                Подписки</a>
+            <a href="#" class="text-center link-dark list-group-item-action list-group-item-light p-2">
+                Все</a>
+        </div>
+    </div>
+{% endblock %}
