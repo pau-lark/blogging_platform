@@ -12,11 +12,11 @@ class CustomUser(AbstractUser):
     birth_date = models.DateField(blank=True,
                                   null=True,
                                   verbose_name='Дата рождения')
-    following = models.ManyToManyField('self',
-                                       through='Following',
-                                       related_name='followers',
-                                       verbose_name='Подписки',
-                                       symmetrical=False)
+    subscriptions = models.ManyToManyField('self',
+                                           through='Subscription',
+                                           related_name='subscribers',
+                                           verbose_name='Подписки',
+                                           symmetrical=False)
 
     class Meta:
         verbose_name = 'Пользователь'
@@ -32,21 +32,18 @@ class CustomUser(AbstractUser):
                        ])
 
 
-class Following(models.Model):
+class Subscription(models.Model):
     """Промежуточная модель для связи M2M CustomUser на себя
     с ключами пользователей и даты подписки"""
     from_user = models.ForeignKey(CustomUser,
-                                  related_name='follow_from',
                                   on_delete=models.CASCADE,
+                                  related_name='subscribed_users',
                                   verbose_name='Подписчик')
     to_user = models.ForeignKey(CustomUser,
-                                related_name='follow_to',
                                 on_delete=models.CASCADE,
+                                related_name='subscripted_users',
                                 verbose_name='Подписка')
-    follow_datatime = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        ordering = ['-follow_datetime']
+    subscription_datatime = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f'{self.from_user} follows {self.to_user}'
+        return f'{self.from_user} subscribed {self.to_user}'
