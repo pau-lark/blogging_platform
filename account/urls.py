@@ -26,10 +26,12 @@ urlpatterns = [
          name='password_reset_complete'),
     path('register/', views.RegisterView.as_view(),
          name='register'),
-    path('author_list/', views.author_list_view,
+    path('profile/', views.profile, name='profile'),
+    # path('author_list/', views.author_list_view,
+    #      name='author_list'),
+    path('author_list/<str:filter_by>/<str:order_by>/',
+         views.author_list_view,
          name='author_list'),
-    path('author_list/<str:filter_by>/', views.author_list_view,
-         name='author_list_by_filter'),
     path('authors/<str:username>/', views.AuthorDetailView.as_view(),
          name='author_detail')
 ]

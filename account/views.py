@@ -2,11 +2,12 @@ from django.shortcuts import render, get_object_or_404
 from .forms import RegisterForm
 from django.views.generic.base import View, TemplateResponseMixin
 from .models import CustomUser
-from .services.users_range import get_filtered_user_list, get_sorted_user_list
+from .services.users_range_service import get_filtered_user_list, get_sorted_user_list
 from django.contrib.auth.decorators import login_required
+from blog.common.decorators import query_debugger
+from django.http import HttpRequest, HttpResponse
 
 
-# Мысль, убрать на хуй TRM
 class RegisterView(TemplateResponseMixin, View):
     template_name = 'registration/register_form.html'
 
@@ -34,14 +35,25 @@ class RegisterView(TemplateResponseMixin, View):
 
 
 @login_required
-def author_list_view(request, filter_by=None):
+def profile(request):
+    return render(request, 'users/profile/detail.html')
+
+
+@query_debugger
+@login_required
+def author_list_view(request: HttpRequest, **kwargs) -> HttpResponse:
+    filter_by = kwargs.get('filter_by')
+    order_by = kwargs.get('order_by')
+    print(filter_by, order_by)
     authors = get_filtered_user_list(username=request.user.username,
                                      filter_by=filter_by)
-    authors = get_sorted_user_list(user_list=authors)
+    authors = get_sorted_user_list(user_list=authors,
+                                   order_by=order_by)
     context = {
         'authors': authors,
         'section': 'author',
-        'filter': filter_by
+        'filter': filter_by,
+        'order': order_by
     }
     return render(request, 'users/list.html', context)
 

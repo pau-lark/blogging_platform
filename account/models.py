@@ -12,6 +12,9 @@ class CustomUser(AbstractUser):
     birth_date = models.DateField(blank=True,
                                   null=True,
                                   verbose_name='Дата рождения')
+    about = models.TextField(blank=True,
+                             null=True,
+                             verbose_name='О себе')
     subscriptions = models.ManyToManyField('self',
                                            through='Subscription',
                                            related_name='subscribers',

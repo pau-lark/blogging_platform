@@ -6,16 +6,6 @@
 {% block content %}
     <div class="row w-75 mx-auto my-3">
         <div class="col-lg-8">
-            <div class="card mb-4">
-                <div class="list-group-horizontal d-flex justify-content-around">
-                    <a href="#" class="text-center link-dark list-group-item-action list-group-item-light p-2 active">
-                        По количеству постов</a>
-                    <a href="#" class="text-center link-dark list-group-item-action list-group-item-light p-2">
-                        По подписчикам</a>
-                    <a href="#" class="text-center link-dark list-group-item-action list-group-item-light p-2">
-                        По рейтингу</a>
-                </div>
-            </div>
             {% for author in authors %}
             <div class="user-card mb-4">
                 <div class="col-3">
@@ -36,24 +26,42 @@
                 </div>
                 <div class="card-body col-3"><a class="btn btn-dark" href="{{ post.get_absolute_url }}">Подписаться</a></div>
             </div>
+            {% empty %}
+                <h3>Не найдено ни одного автора</h3>
             {% endfor %}
         </div>
 
         <div class="col-lg-4">
             <div class="card mb-4">
                 <div class="list-group d-flex justify-content-around">
-                    <a href="{% url 'author_list' %}"
+                    <a href="{% url 'author_list' filter_by='all' order_by=order %}"
                        class="text-center link-dark list-group-item-action list-group-item-light p-2
-                            {% if not filter %}active{% endif %}">
+                            {% if filter == 'all' %}active{% endif %}">
                                 Все</a>
-                    <a href="{% url 'author_list_by_filter' 'subscriptions' %}"
+                    <a href="{% url 'author_list' filter_by='subscriptions' order_by=order %}"
                        class="text-center link-dark list-group-item-action list-group-item-light p-2
                             {% if filter == 'subscriptions' %}active{% endif %}">
                                 Подписки</a>
-                    <a href="{% url 'author_list_by_filter' 'subscribers' %}"
+                    <a href="{% url 'author_list' filter_by='subscribers' order_by=order %}"
                        class="text-center link-dark list-group-item-action list-group-item-light p-2
                             {% if filter == 'subscribers' %}active{% endif %}">
                                 Подписчики</a>
+                </div>
+            </div>
+            <div class="card mb-4">
+                <div class="list-group d-flex justify-content-around">
+                    <a href="{% url 'author_list' filter_by=filter order_by='post_count' %}"
+                       class="text-center link-dark list-group-item-action list-group-item-light p-2
+                        {% if order == 'post_count' %}active{% endif %}">
+                            По количеству постов</a>
+                    <a href="{% url 'author_list' filter_by=filter order_by='subscribers' %}"
+                       class="text-center link-dark list-group-item-action list-group-item-light p-2
+                        {% if order == 'subscribers' %}active{% endif %}">
+                            По подписчикам</a>
+                    <a href="{% url 'author_list' filter_by=filter order_by='rating' %}"
+                       class="text-center link-dark list-group-item-action list-group-item-light p-2
+                        {% if order == 'rating' %}active{% endif %}">
+                        По рейтингу</a>
                 </div>
             </div>
         </div>

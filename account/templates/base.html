@@ -22,9 +22,13 @@
                         <li class="nav-item"><a class="nav-link
                             {% if section == 'post' %}active{% endif %}"
                                 href="{% url 'blog:post_list' %}">Статьи</a></li>
-                        <li class="nav-item"><a class="nav-link
-                            {% if section == 'author' %}active{% endif %}"
-                                href="{% url 'author_list' %}">Авторы</a></li>
+                        <li class="nav-item">
+                            <a class="nav-link
+                                {% if section == 'author' %}active{% endif %}"
+                                    href="{% url 'author_list' filter_by='subscriptions' order_by='rating'%}">
+                                        Авторы
+                            </a>
+                        </li>
                     </ul>
                 </div>
                 <div class="px-5">
@@ -40,7 +44,7 @@
                         </a>
                         <div class="dropdown-menu dropdown-menu-end animate slideIn" aria-labelledby="navbarDropdown">
                             <a class="dropdown-item" href="#">Написать статью</a>
-                            <a class="dropdown-item" href="#">Профиль</a>
+                            <a class="dropdown-item" href="{% url 'profile' %}">Профиль</a>
                             <a class="dropdown-item" href="#">Настройки</a>
                             <div class="dropdown-divider"></div>
                             <a class="dropdown-item" href="{% url 'logout' %}">Выйти</a>
