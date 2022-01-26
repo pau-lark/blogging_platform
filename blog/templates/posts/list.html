@@ -3,37 +3,41 @@
 {% block title %}Статьи{% endblock %}
 
 {% block content %}
-    <div class="card mb-4">
-        <div class="list-group-horizontal d-flex justify-content-around">
-            <a href="#" class="text-center link-dark list-group-item-action list-group-item-light p-2 active">
-                Последние</a>
-            <a href="#" class="text-center link-dark list-group-item-action list-group-item-light p-2">
-                По рейтингу</a>
-            <a href="#" class="text-center link-dark list-group-item-action list-group-item-light p-2">
-                По популярности</a>
+    <div class="row w-75 mx-auto my-3">
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="list-group-horizontal d-flex justify-content-around">
+                    <a href="#" class="text-center link-dark list-group-item-action list-group-item-light p-2 active">
+                        Последние</a>
+                    <a href="#" class="text-center link-dark list-group-item-action list-group-item-light p-2">
+                        По рейтингу</a>
+                    <a href="#" class="text-center link-dark list-group-item-action list-group-item-light p-2">
+                        По популярности</a>
+                </div>
+            </div>
+            {% for post in object_list %}
+                <div class="card mb-4">
+                    <a href="#!"><img class="card-img-top" src="https://dummyimage.com/850x350/dee2e6/6c757d.jpg" alt="..." /></a>
+                    <div class="card-body">
+                        <div class="small text-muted">{{ post.created }}</div>
+                        <h2 class="card-title">{{ post.title }}</h2>
+                        <p class="card-text">{{ post.preview_content|truncatewords:40 }}</p>
+                        <a class="btn btn-primary" href="{{ post.get_absolute_url }}">Read more →</a>
+                    </div>
+                </div>
+            {% endfor %}
         </div>
-    </div>
-    {% for post in object_list %}
-    <div class="card mb-4">
-        <a href="#!"><img class="card-img-top" src="https://dummyimage.com/850x350/dee2e6/6c757d.jpg" alt="..." /></a>
-        <div class="card-body">
-            <div class="small text-muted">{{ post.created }}</div>
-            <h2 class="card-title">{{ post.title }}</h2>
-            <p class="card-text">{{ post.preview_content|truncatewords:40 }}</p>
-            <a class="btn btn-primary" href="{{ post.get_absolute_url }}">Read more →</a>
-        </div>
-    </div>
-    {% endfor %}
-{% endblock %}
 
-{% block sidebar %}
-    <div class="card mb-4">
-        <div class="list-group d-flex justify-content-around">
-            <a href="#" class="text-center link-dark list-group-item-action list-group-item-light p-2 active">
-                Подписки</a>
-            <a href="#" class="text-center link-dark list-group-item-action list-group-item-light p-2">
-                Все</a>
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="list-group d-flex justify-content-around">
+                    <a href="#" class="text-center link-dark list-group-item-action list-group-item-light p-2 active">
+                        Подписки</a>
+                    <a href="#" class="text-center link-dark list-group-item-action list-group-item-light p-2">
+                        Все</a>
+                </div>
+            </div>
+            {% include 'posts/categories_sidebar.html' %}
         </div>
     </div>
-    {% include 'posts/categories_sidebar.html' %}
 {% endblock %}
