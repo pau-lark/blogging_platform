@@ -1,0 +1,36 @@
+<table class="card mb-4 p-4 table">
+                <tr class="border-bottom"><td colspan="2"><h6>Информация</h6></td></tr>
+                <tr><td colspan="2"><strong>{{ user.username }}</strong></td></tr>
+                <tr>
+                    <td colspan="2">{{ user.email }}</td>
+                </tr>
+                {% if user.birth_date %}
+                    <tr>
+                        <td>Дата рождения:</td>
+                        <td>{{ user.birth_date }}</td>
+                    </tr>
+                {% endif %}
+                <tr>
+                    <td>Дата регистрации:</td>
+                    <td>{{ user.date_joined.date }}</td>
+                </tr>
+                <tr>
+                    <td>
+                        <a href="{% url 'user_list' user.username 'subscribers' 'rating'%}"
+                           class="link-dark"><strong>Подписчики</strong></a>
+                    </td>
+                    <td>{{ user.subscribers.count }}</td>
+                </tr>
+                <tr>
+                    <td>
+                        <a href="{% url 'user_list' user.username 'subscriptions' 'rating'%}" class="link-dark"><strong>Подписки</strong></a>
+                    </td>
+                    <td>{{ user.subscriptions.count }}</td>
+                </tr>
+                <tr>
+                    <td>
+                        <a href="#" class="link-dark"><strong>Посты</strong></a>
+                    </td>
+                    <td>{{ user.posts.count }}</td>
+                </tr>
+            </table>

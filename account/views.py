@@ -51,19 +51,21 @@ def profile(request: HttpRequest, username: str = None) -> HttpResponse:
     return render(request, 'users/profile/detail.html', context)
 
 
+
 @query_debugger
 @login_required
-def author_list_view(request: HttpRequest, **kwargs) -> HttpResponse:
+def user_list_view(request: HttpRequest, **kwargs) -> HttpResponse:
     filter_by = kwargs.get('filter_by')
     order_by = kwargs.get('order_by')
-    username = kwargs.get('username', None)
+    username = kwargs.get('username')
     if not username:
         username = request.user.username
-    authors = get_filtered_user_list(username, filter_by)
-    authors = get_sorted_user_list(authors, order_by)
+    users = get_filtered_user_list(username, filter_by)
+    users = get_sorted_user_list(users, order_by)
     context = {
-        'authors': authors,
+        'users': users,
         'section': 'author',
+        'username': username,
         'filter': filter_by,
         'order': order_by
     }
@@ -81,7 +83,7 @@ class AuthorListView(TemplateResponseMixin, View):
             'section': 'author'
         }
         return self.render_to_response(context)
-"""
+
 
 
 class AuthorDetailView(TemplateResponseMixin, View):
@@ -95,3 +97,4 @@ class AuthorDetailView(TemplateResponseMixin, View):
             'section': 'author'
         }
         return self.render_to_response(context)
+"""

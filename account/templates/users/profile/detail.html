@@ -24,6 +24,8 @@
                         <h3>{{ user.username }}</h3>
                         {% if user != request.user %}
                             <a href="#" class="btn btn-dark">Подписаться</a>
+                        {% else %}
+                            <a href="#" class="btn btn-outline-dark">Настройки</a>
                         {% endif %}
                     </div>
                     <hr>
@@ -41,35 +43,7 @@
             </div>
         </div>
         <div class="col-lg-4 sidebar-min-w">
-            <table class="card mb-4 p-3 table">
-                <tr><td colspan="2"><h4>Информация</h4></td></tr>
-                <tr>
-                    <td colspan="2">{{ user.email }}</td>
-                </tr>
-                {% if user.birth_date %}
-                    <tr>
-                        <td>Дата рождения:</td>
-                        <td>{{ user.birth_date }}</td>
-                    </tr>
-                {% endif %}
-                <tr>
-                    <td>Дата регистрации:</td>
-                    <td>{{ user.date_joined.date }}</td>
-                </tr>
-                <tr>
-                    <td>
-                        <a href="{% url 'user_list' user.username 'subscribers' 'rating'%}"
-                           class="link-dark"><strong>Подписчики</strong></a>
-                    </td>
-                    <td>{{ user.subscribers.count }}</td>
-                </tr>
-                <tr>
-                    <td>
-                        <a href="#" class="link-dark"><strong>Подписки</strong></a>
-                    </td>
-                    <td>{{ user.subscriptions.count }}</td>
-                </tr>
-            </table>
+            {% include 'users/profile/cart.html' %}
         </div>
     </div>
 {% endblock %}

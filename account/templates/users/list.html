@@ -5,26 +5,32 @@
 
 {% block content %}
     <div class="row w-75 mx-auto my-3">
+        {% if username != request.user.username %}
+            <h2 class="pb-3">
+                <span class="text-muted">Друзья пользователя</span>
+                <a class="link-dark" href="{% url 'user_profile' username %}">{{ username }}</a>
+            </h2>
+        {% endif %}
         <div class="col-lg-8">
-            {% for author in authors %}
+            {% for user in users %}
             <div class="user-card mb-4">
                 <div class="col-3">
-                    {% if author.photo %}
-                        <a href="{{ author.get_absolute_url }}">
-                            <img class="img-thumbnail" src="{{ author.image.url }}" alt="">
+                    {% if user.photo %}
+                        <a href="{{ user.get_absolute_url }}">
+                            <img class="img-thumbnail" src="{{ user.photo.url }}" alt="">
                         </a>
                     {% else %}
                         <img class="img-thumbnail" src="{% static 'images/no-image.jpg' %}" alt="">
                     {% endif %}
                 </div>
                 <div class="card-body col-6 px-4">
-                    <a href="{{ author.get_absolute_url }}" class="link-dark">
-                        <h2 class="card-title">{{ author.username }}</h2>
+                    <a href="{{ user.get_absolute_url }}" class="link-dark">
+                        <h2 class="card-title">{{ user.username }}</h2>
                     </a>
-                    <div class="small text-muted">Постов: {{ author.posts.count }}</div>
+                    <div class="small text-muted">Постов: {{ user.posts.count }}</div>
                     <p class="card-text">Рейтинг: <strong>1000000</strong></p>
                 </div>
-                <div class="card-body col-3"><a class="btn btn-dark" href="{{ post.get_absolute_url }}">Подписаться</a></div>
+                <div class="card-body col-3"><a class="btn btn-dark" href="#">Подписаться</a></div>
             </div>
             {% empty %}
                 <h3>Не найдено ни одного автора</h3>
@@ -34,15 +40,17 @@
         <div class="col-lg-4">
             <div class="card mb-4">
                 <div class="list-group d-flex justify-content-around">
-                    <a href="{% url 'author_list' filter_by='all' order_by=order %}"
-                       class="text-center link-dark list-group-item-action list-group-item-light p-2
-                            {% if filter == 'all' %}active{% endif %}">
-                                Все</a>
-                    <a href="{% url 'author_list' filter_by='subscriptions' order_by=order %}"
+                    {% if username == request.user.username %}
+                        <a href="{% url 'user_list' username 'all' order %}"
+                           class="text-center link-dark list-group-item-action list-group-item-light p-2
+                                {% if filter == 'all' %}active{% endif %}">
+                                    Все</a>
+                    {% endif %}
+                    <a href="{% url 'user_list' username 'subscriptions' order %}"
                        class="text-center link-dark list-group-item-action list-group-item-light p-2
                             {% if filter == 'subscriptions' %}active{% endif %}">
                                 Подписки</a>
-                    <a href="{% url 'author_list' filter_by='subscribers' order_by=order %}"
+                    <a href="{% url 'user_list' username 'subscribers' order %}"
                        class="text-center link-dark list-group-item-action list-group-item-light p-2
                             {% if filter == 'subscribers' %}active{% endif %}">
                                 Подписчики</a>
@@ -50,15 +58,11 @@
             </div>
             <div class="card mb-4">
                 <div class="list-group d-flex justify-content-around">
-                    <a href="{% url 'author_list' filter_by=filter order_by='post_count' %}"
+                    <a href="{% url 'user_list' username filter 'post_count' %}"
                        class="text-center link-dark list-group-item-action list-group-item-light p-2
                         {% if order == 'post_count' %}active{% endif %}">
                             По количеству постов</a>
-                    <a href="{% url 'author_list' filter_by=filter order_by='subscribers' %}"
-                       class="text-center link-dark list-group-item-action list-group-item-light p-2
-                        {% if order == 'subscribers' %}active{% endif %}">
-                            По подписчикам</a>
-                    <a href="{% url 'author_list' filter_by=filter order_by='rating' %}"
+                    <a href="{% url 'user_list' username filter 'rating' %}"
                        class="text-center link-dark list-group-item-action list-group-item-light p-2
                         {% if order == 'rating' %}active{% endif %}">
                         По рейтингу</a>

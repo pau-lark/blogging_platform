@@ -25,7 +25,7 @@
                         <li class="nav-item">
                             <a class="nav-link
                                 {% if section == 'author' %}active{% endif %}"
-                                    href="{% url 'author_list' filter_by='subscriptions' order_by='rating'%}">
+                                    href="{% url 'my_user_list' 'subscriptions' 'rating'%}">
                                         Авторы
                             </a>
                         </li>

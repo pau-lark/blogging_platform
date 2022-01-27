@@ -131,6 +131,12 @@ MEDIA_ROOT = BASE_DIR.joinpath('media')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
+# Login, logout, redirect urls
+LOGIN_REDIRECT_URL = 'blog:post_list'
+LOGIN_URL = 'login'
+LOGOUT_URL = 'logout'
+
+
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
 

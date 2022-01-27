@@ -20,10 +20,11 @@ def get_user_object(username: str) -> CustomUser:
 @query_debugger
 def get_filtered_user_list(username: str, filter_by: str = 'all') -> QuerySet[CustomUser]:
     """Получаем qs пользователей, в зависимости от фильтра"""
-    user = get_user_object(username)
     if filter_by == 'subscriptions':
+        user = get_user_object(username)
         return user.subscriptions.all()
     elif filter_by == 'subscribers':
+        user = get_user_object(username)
         return user.subscribers.all()
     return CustomUser.objects.exclude(username=username)
 
@@ -41,11 +42,17 @@ def get_filtered_user_list(username: str, filter_by: str = 'all') -> QuerySet[Cu
 #     return user_list
 
 
-def _get_order_by_popularity(user_list: QuerySet[CustomUser]) -> QuerySet[CustomUser]:
-    """Возвращает список пользователей,
-    отсортированный по количеству подписчиков"""
-    return user_list.annotate(subscribers_count=Count('subscribers'))\
-        .order_by('-subscribers_count')
+# убрать потом
+# def _get_order_by_popularity(user_list: QuerySet[CustomUser]) -> QuerySet[CustomUser]:
+#     """Возвращает список пользователей,
+#     отсортированный по количеству подписчиков"""
+#     for user in user_list:
+#         print(Count(user.subscribers))
+#     for user in user_list.annotate(subscribers_count=Count('subscribers')):
+#         print(user.username, user.subscribers_count)
+#     print('subb')
+#     return user_list.annotate(subscribers_count=Count('subscribers'))\
+#         .order_by('-subscribers_count')
 
 
 def _get_order_by_post_count(user_list: QuerySet[CustomUser]) -> QuerySet[CustomUser]:
@@ -59,8 +66,8 @@ def get_sorted_user_list(user_list: QuerySet[CustomUser], order_by: str = 'ratin
     if order_by == 'rating':
         pass
         # return _get_order_by_rating(user_list)
-    elif order_by == 'subscribers':
-        return _get_order_by_popularity(user_list)
+    # elif order_by == 'subscribers':
+    #     return _get_order_by_popularity(user_list)
     elif order_by == 'post_count':
         return _get_order_by_post_count(user_list)
 
