@@ -149,3 +149,18 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 REDIS_HOST = 'localhost'
 REDIS_PORT = 6379
 REDIS_DB = 0
+
+
+USER_RATING_BY_ACTION = {
+    'add_subscriber': 10,
+    'delete_subscriber': -10,
+    'create_post': 25,
+    'delete_post': -25
+}
+
+POST_RATING_BY_ACTION = {
+    'view': 1,
+    'like': 3,
+    'unlike': -3,
+    'comment': 5
+}
