@@ -19,6 +19,8 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'account.apps.AccountConfig',
+
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -29,7 +31,6 @@ INSTALLED_APPS = [
     'crispy_forms',
     'sorl.thumbnail',
 
-    'account.apps.AccountConfig',
     'blog.apps.BlogConfig'
 ]
 

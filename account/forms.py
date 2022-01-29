@@ -31,3 +31,19 @@ class RegisterForm(forms.ModelForm):
         if password != password2:
             raise forms.ValidationError('Пароли не совпадают')
         return password2
+
+
+class ProfileEditForm(forms.ModelForm):
+    birth_date = forms.DateField(widget=forms.TextInput(
+        attrs={'type': 'date'}
+    ))
+
+    class Meta:
+        model = CustomUser
+        fields = ('username',
+                  'first_name',
+                  'last_name',
+                  'email',
+                  'birth_date',
+                  'photo',
+                  'about')

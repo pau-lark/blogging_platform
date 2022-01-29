@@ -1,4 +1,4 @@
-from .forms import RegisterForm
+from .forms import RegisterForm, ProfileEditForm
 from .models import CustomUser
 from .services.users_range_service import \
     get_filtered_user_list,\
@@ -7,7 +7,7 @@ from .services.users_range_service import \
 from blog.common.decorators import query_debugger
 from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest, HttpResponse
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, redirect
 from django.views.generic.base import View, TemplateResponseMixin
 
 
@@ -18,13 +18,13 @@ class RegisterView(TemplateResponseMixin, View):
     def get_form(data=None):
         return RegisterForm(data)
 
-    def get(self, request, *args, **kwargs):
+    def get(self, request):
         context = {
             'form': self.get_form()
         }
         return self.render_to_response(context)
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request):
         form = self.get_form(data=request.POST)
         if form.is_valid():
             new_user = form.save(commit=False)
@@ -50,6 +50,22 @@ def profile(request: HttpRequest, username: str = None) -> HttpResponse:
     }
     return render(request, 'users/profile/detail.html', context)
 
+
+class ProfileSettingsView(TemplateResponseMixin, View):
+    template_name = 'users/profile/settings.html'
+
+    def get(self, request):
+        form = ProfileEditForm(instance=request.user)
+        return self.render_to_response({'form': form})
+
+    def post(self, request):
+        form = ProfileEditForm(instance=request.user,
+                               data=request.POST,
+                               files=request.FILES)
+        if form.is_valid():
+            form.save()
+            return redirect('profile')
+        return self.render_to_response({'form': form})
 
 
 @query_debugger
