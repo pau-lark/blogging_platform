@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}{{ post.title }}{% endblock %}
 
@@ -84,7 +85,22 @@
                 {% if post.author != request.user %}
                     <tr>
                         <td colspan="2">
-                            <a href="#" class="btn btn-dark">Подписаться</a>
+                            {% with subscriptions=request.user.subscriptions.all %}
+                                <span class="subscribed">
+                                    {% if user in subscriptions %}
+                                        <p>Вы подписаны</p>
+                                    {% endif %}
+                                </span>
+                                <a href="#" class="subscription btn btn-outline-dark"
+                                    data-name="{{ user.username }}"
+                                    data-action="{% if user in subscriptions %}delete{% else %}add{% endif %}">
+                                        {% if user in subscriptions %}
+                                            Отписаться
+                                        {% else %}
+                                            Подписаться
+                                        {% endif %}
+                                </a>
+                            {% endwith %}
                         </td>
                     </tr>
                 {% endif %}
@@ -92,4 +108,8 @@
             {% include 'posts/categories_sidebar.html' %}
         </div>
     </div>
+{% endblock %}
+
+{% block domready %}
+    <script src="{% static 'js/subscription.js' %}"></script>
 {% endblock %}

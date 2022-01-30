@@ -16,10 +16,18 @@ class RatingMixin:
     key = None
     rating_by_action = None
 
-    def get_rating_by_id(self, object_id: int) -> str:
-        """Получение рейтинга объекта по id"""
-        return REDIS.zscore(name=self.key,
-                            value=object_id)
+    def get_rating_by_id(self, object_id: int) -> int:
+        """
+        Получение рейтинга объекта по id, если объекта нет, он
+        добавляется с рейтингом 0
+        """
+        rating = REDIS.zscore(name=self.key,
+                              value=object_id)
+        if not rating:
+            self.incr_or_decr_rating_by_id(action='registration',
+                                           object_id=object_id)
+            return 0
+        return int(rating)
 
     def get_range_list_by_rating(self) -> list:
         """Получение отсортированного списка по рейтингу"""
@@ -32,7 +40,7 @@ class RatingMixin:
         """Изменение рейтинга объекта"""
         if action in self.rating_by_action:
             REDIS.zincrby(name=self.key,
-                          amount=self.rating_by_action(action),
+                          amount=self.rating_by_action.get(action),
                           value=object_id)
         else:
             # и пишем в лог

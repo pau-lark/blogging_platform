@@ -22,16 +22,33 @@
                 <div class="col-7">
                     <div class="d-flex justify-content-between">
                         <h3>{{ user.username }}</h3>
-                        {% if user != request.user %}
-                            <a href="#" class="btn btn-dark">Подписаться</a>
-                        {% else %}
-                            <a href="{% url 'profile_settings' %}" class="btn btn-outline-dark">Настройки</a>
-                        {% endif %}
+                        <div>
+                            {% if user != request.user %}
+                                {% with subscriptions=request.user.subscriptions.all %}
+                                    <span class="subscribed" data-name="{{ user.username }}">
+                                        {% if user in subscriptions %}
+                                            <p>Вы подписаны</p>
+                                        {% endif %}
+                                    </span>
+                                    <a href="#" class="subscription btn btn-outline-dark"
+                                        data-name="{{ user.username }}"
+                                        data-action="{% if user in subscriptions %}delete{% else %}add{% endif %}">
+                                            {% if user in subscriptions %}
+                                                Отписаться
+                                            {% else %}
+                                                Подписаться
+                                            {% endif %}
+                                    </a>
+                                {% endwith %}
+                            {% else %}
+                                <a href="{% url 'profile_settings' %}" class="btn btn-outline-dark">Настройки</a>
+                            {% endif %}
+                        </div>
                     </div>
                     <hr>
                     <h2>{{ user.first_name }}</h2>
                     <h2>{{ user.last_name }}</h2>
-                    <h4 class="text-muted my-4">Рейтинг: 1000000</h4>
+                    <h4 class="text-muted my-4">Рейтинг: {{ user.rating }}</h4>
                 </div>
             </div>
             {% if user.about %}
@@ -46,4 +63,7 @@
             {% include 'users/profile/cart.html' %}
         </div>
     </div>
+{% endblock %}
+{% block domready %}
+    <script src="{% static 'js/subscription.js' %}"></script>
 {% endblock %}

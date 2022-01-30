@@ -1,8 +1,9 @@
 from ..models import CustomUser
+from .decorators import query_debugger
+from .rating_service import UsersRating
 from django.shortcuts import get_object_or_404
 from django.db.models.query import QuerySet
 from django.db.models import Count
-from blog.common.decorators import query_debugger
 from django.http import Http404
 
 
@@ -19,62 +20,53 @@ def get_user_object(username: str) -> CustomUser:
 
 @query_debugger
 def get_filtered_user_list(username: str, filter_by: str = 'all') -> QuerySet[CustomUser]:
-    """Получаем qs пользователей, в зависимости от фильтра"""
+    """
+    Получаем qs пользователей, в зависимости от фильтра
+    Значения filter_by:
+        'subscriptions' - фильтровать по подпискам;
+        'subscribers' - фильтровать по подписчикам;
+        'all' - все пользователи.
+    """
     if filter_by == 'subscriptions':
         user = get_user_object(username)
-        return user.subscriptions.all()
+        return user.subscriptions.prefetch_related('posts').all()
     elif filter_by == 'subscribers':
         user = get_user_object(username)
-        return user.subscribers.all()
-    return CustomUser.objects.exclude(username=username)
+        return user.subscribers.prefetch_related('posts').all()
+    return CustomUser.objects.prefetch_related('posts').exclude(username=username)
 
 
-# rating = UserRating()
-
-
-# def _get_order_by_rating(user_list: QuerySet[CustomUser]) -> list:
-#     """Возвращает список пользователей, отсортированный по рейтингу"""
-#     user_list = list(user_list)
-#     users_sorted_by_rating_ids = rating.get_users_sorted_by_rating()
-#     user_list.sort(
-#         key=lambda user: users_sorted_by_rating_ids.index(user.id)
-#     )
-#     return user_list
-
-
-# убрать потом
-# def _get_order_by_popularity(user_list: QuerySet[CustomUser]) -> QuerySet[CustomUser]:
-#     """Возвращает список пользователей,
-#     отсортированный по количеству подписчиков"""
-#     for user in user_list:
-#         print(Count(user.subscribers))
-#     for user in user_list.annotate(subscribers_count=Count('subscribers')):
-#         print(user.username, user.subscribers_count)
-#     print('subb')
-#     return user_list.annotate(subscribers_count=Count('subscribers'))\
-#         .order_by('-subscribers_count')
+def _get_order_by_rating(user_list: QuerySet[CustomUser]) -> list:
+    """Возвращает список пользователей, отсортированный по рейтингу"""
+    user_list = list(user_list)
+    rating = UsersRating()
+    users_sorted_by_rating_ids = [
+        int(user_id) for user_id in rating.get_range_list_by_rating()
+    ]
+    try:
+        user_list.sort(
+            key=lambda user: users_sorted_by_rating_ids.index(user.id)
+        )
+    except ValueError as e:
+        # в лог
+        pass
+    return user_list
 
 
 def _get_order_by_post_count(user_list: QuerySet[CustomUser]) -> QuerySet[CustomUser]:
-    """Возвращает список пользователей,
-        отсортированный по количеству постов"""
+    """Возвращает список пользователей, отсортированный по количеству постов"""
     return user_list.annotate(posts_count=Count('posts')).order_by('-posts_count')
 
 
 @query_debugger
 def get_sorted_user_list(user_list: QuerySet[CustomUser], order_by: str = 'rating'):
+    """
+    Получаем отсортированный qs пользователей
+    Значения order_by:
+        'rating' - сортировать по рейтингу;
+        'post_count' - сортировать по количеству постов.
+    """
     if order_by == 'rating':
-        pass
-        # return _get_order_by_rating(user_list)
-    # elif order_by == 'subscribers':
-    #     return _get_order_by_popularity(user_list)
+        return _get_order_by_rating(user_list)
     elif order_by == 'post_count':
         return _get_order_by_post_count(user_list)
-
-
-    # order_by_chose = {
-    #     #'rating': _get_order_by_rating(user_list),
-    #     'subscribers': _get_order_by_popularity(user_list),
-    #     'post_count': _get_order_by_post_count(user_list)
-    # }
-    # return order_by_chose.get(order_by)

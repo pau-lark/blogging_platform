@@ -4,7 +4,7 @@ from django.views.generic import ListView, DetailView
 from .models import Post, Category
 from django.template.loader import render_to_string
 
-from .common.decorators import query_debugger
+from account.services.decorators import query_debugger
 
 
 def index(request):

@@ -4,8 +4,10 @@ from django.urls import reverse
 
 
 class CustomUser(AbstractUser):
-    """Стандартная пользовательская модель с
-    дополнительными полями"""
+    """
+    Стандартная пользовательская модель с
+    дополнительными полями
+    """
     photo = models.ImageField(upload_to='accounts/photos/',
                               blank=True,
                               verbose_name='Фото')
@@ -36,8 +38,10 @@ class CustomUser(AbstractUser):
 
 
 class Subscription(models.Model):
-    """Промежуточная модель для связи M2M CustomUser на себя
-    с ключами пользователей и даты подписки"""
+    """
+    Промежуточная модель для связи M2M CustomUser на себя
+    с ключами пользователей и даты подписки
+    """
     from_user = models.ForeignKey(CustomUser,
                                   on_delete=models.CASCADE,
                                   related_name='subscribed_users',

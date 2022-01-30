@@ -1,14 +1,21 @@
 from .forms import RegisterForm, ProfileEditForm
-from .models import CustomUser
+from .services.decorators import ajax_required
+from .services.subscription_service import subscribe_user, get_user_subscriptions
 from .services.users_range_service import \
     get_filtered_user_list,\
     get_sorted_user_list,\
     get_user_object
-from blog.common.decorators import query_debugger
+from .services.rating_service import UsersRating
+from .services.decorators import query_debugger
 from django.contrib.auth.decorators import login_required
-from django.http import HttpRequest, HttpResponse
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
+from django.views.decorators.http import require_POST
 from django.views.generic.base import View, TemplateResponseMixin
+
+
+RATING = UsersRating()
 
 
 class RegisterView(TemplateResponseMixin, View):
@@ -30,7 +37,9 @@ class RegisterView(TemplateResponseMixin, View):
             new_user = form.save(commit=False)
             new_user.set_password(form.cleaned_data['password'])
             new_user.save()
-            return render(request, 'registration/register_done.html')
+            RATING.incr_or_decr_rating_by_id(action='registration',
+                                             object_id=new_user.id)
+            return redirect('profile')
         context = {
             'form': form
         }
@@ -44,6 +53,8 @@ def profile(request: HttpRequest, username: str = None) -> HttpResponse:
         user = get_user_object(username)
     else:
         user = request.user
+    user.rating = int(RATING.get_rating_by_id(user.id))
+    # request.user.subscription_list = get_user_subscriptions(request.user)
     context = {
         'user': user,
         'section': 'author'
@@ -76,8 +87,14 @@ def user_list_view(request: HttpRequest, **kwargs) -> HttpResponse:
     username = kwargs.get('username')
     if not username:
         username = request.user.username
+
     users = get_filtered_user_list(username, filter_by)
     users = get_sorted_user_list(users, order_by)
+
+    for user in users:
+        user.rating = RATING.get_rating_by_id(user.id)
+
+    request.user.subscription_list = get_user_subscriptions(request.user)
     context = {
         'users': users,
         'section': 'author',
@@ -88,29 +105,14 @@ def user_list_view(request: HttpRequest, **kwargs) -> HttpResponse:
     return render(request, 'users/list.html', context)
 
 
-"""
-class AuthorListView(TemplateResponseMixin, View):
-    template_name = 'users/list.html'
-
-    def get(self, request):
-        authors = CustomUser.objects.all()
-        context = {
-            'authors': authors,
-            'section': 'author'
-        }
-        return self.render_to_response(context)
-
-
-
-class AuthorDetailView(TemplateResponseMixin, View):
-    template_name = 'users/profile/detail.html'
-
-    def get(self, request, username):
-        author = get_object_or_404(CustomUser,
-                                   username=username)
-        context = {
-            'author': author,
-            'section': 'author'
-        }
-        return self.render_to_response(context)
-"""
+@login_required
+@require_POST
+def follow_user(request):
+    username = request.POST.get('username')
+    action = request.POST.get('action')
+    if username and action:
+        if subscribe_user(from_user=request.user,
+                          to_user_username=username,
+                          action=action):
+            return JsonResponse({'status': 'ok'})
+    return JsonResponse({'status': ''})

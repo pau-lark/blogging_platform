@@ -28,9 +28,26 @@
                         <h2 class="card-title">{{ user.username }}</h2>
                     </a>
                     <div class="small text-muted">Постов: {{ user.posts.count }}</div>
-                    <p class="card-text">Рейтинг: <strong>1000000</strong></p>
+                    <p class="card-text">Рейтинг: <strong>{{ user.rating }}</strong></p>
                 </div>
-                <div class="card-body col-3"><a class="btn btn-dark" href="#">Подписаться</a></div>
+                <div class="card-body col-3">
+                    {% with subscriptions=request.user.subscription_list %}
+                        <span class="subscribed" data-name="{{ user.username }}">
+                            {% if user in subscriptions %}
+                                <p>Вы подписаны</p>
+                            {% endif %}
+                        </span>
+                        <a href="#" class="subscription btn btn-outline-dark"
+                            data-name="{{ user.username }}"
+                            data-action="{% if user in subscriptions %}delete{% else %}add{% endif %}">
+                                {% if user in subscriptions %}
+                                    Отписаться
+                                {% else %}
+                                    Подписаться
+                                {% endif %}
+                        </a>
+                    {% endwith %}
+                </div>
             </div>
             {% empty %}
                 <h3>Не найдено ни одного автора</h3>
@@ -70,4 +87,8 @@
             </div>
         </div>
     </div>
+{% endblock %}
+
+{% block domready %}
+    <script src="{% static 'js/subscription.js' %}"></script>
 {% endblock %}

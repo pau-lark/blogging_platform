@@ -38,4 +38,6 @@ urlpatterns = [
     path('author_list/<str:username>/<str:filter_by>/<str:order_by>/',
          views.user_list_view,
          name='user_list'),
+    path('subscribe/', views.follow_user,
+         name='subscribe_to_user')
 ]

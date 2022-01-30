@@ -1,6 +1,7 @@
 from django.db import connection, reset_queries
-import time
+from django.http import HttpResponseBadRequest
 import functools
+import time
 
 
 def query_debugger(func):
@@ -20,5 +21,14 @@ def query_debugger(func):
         print(f"Number of Queries : {end_queries - start_queries}")
         print(f"Finished in : {(end - start):.2f}s")
         return result
-
     return inner_func
+
+
+def ajax_required(func):
+    def wrap(request, *args, **kwargs):
+        if request.is_ajax():
+            return func(request, *args, **kwargs)
+        return HttpResponseBadRequest()
+    wrap.__doc__ = func.__doc__
+    wrap.__name__ = func.__name__
+    return wrap
