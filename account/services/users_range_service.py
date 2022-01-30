@@ -19,7 +19,7 @@ def get_user_object(username: str) -> CustomUser:
 
 
 @query_debugger
-def get_filtered_user_list(username: str, filter_by: str = 'all') -> QuerySet[CustomUser]:
+def _get_filtered_user_list(username: str, filter_by: str) -> QuerySet[CustomUser]:
     """
     Получаем qs пользователей, в зависимости от фильтра
     Значения filter_by:
@@ -59,7 +59,7 @@ def _get_order_by_post_count(user_list: QuerySet[CustomUser]) -> QuerySet[Custom
 
 
 @query_debugger
-def get_sorted_user_list(user_list: QuerySet[CustomUser], order_by: str = 'rating'):
+def _get_sorted_user_list(user_list: QuerySet[CustomUser], order_by: str):
     """
     Получаем отсортированный qs пользователей
     Значения order_by:
@@ -70,3 +70,11 @@ def get_sorted_user_list(user_list: QuerySet[CustomUser], order_by: str = 'ratin
         return _get_order_by_rating(user_list)
     elif order_by == 'post_count':
         return _get_order_by_post_count(user_list)
+
+
+def get_filtered_and_sorted_user_list(
+        username: str,
+        filter_by: str = 'all',
+        order_by: str = 'rating') -> QuerySet[CustomUser]:
+    users = _get_filtered_user_list(username, filter_by)
+    return _get_sorted_user_list(users, order_by)
