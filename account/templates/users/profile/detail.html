@@ -24,7 +24,7 @@
                         <h3>{{ user.username }}</h3>
                         <div>
                             {% if user != request.user %}
-                                {% with subscriptions=request.user.subscriptions.all %}
+                                {% with subscriptions=request.user.subscription_list %}
                                     <span class="subscribed" data-name="{{ user.username }}">
                                         {% if user in subscriptions %}
                                             <p>Вы подписаны</p>

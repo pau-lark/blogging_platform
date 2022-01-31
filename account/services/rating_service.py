@@ -11,8 +11,8 @@ REDIS = redis.StrictRedis(host=settings.REDIS_HOST,
                           db=settings.REDIS_DB)
 
 
-class RatingMixin:
-    """Миксин для подсчёта рейтинга постов и пользователей"""
+class RatingBase:
+    """Базовый класс для подсчёта рейтинга"""
     key = None
     rating_by_action = None
 
@@ -51,13 +51,13 @@ class RatingMixin:
         REDIS.zrem(self.key, object_id)
 
 
-class UsersRating(RatingMixin):
+class UsersRating(RatingBase):
     """Класс для подсчёта рейтинга пользователей"""
     rating_by_action = settings.USER_RATING_BY_ACTION
     key = 'user_rating'
 
 
-class PostsRating(RatingMixin):
+class PostsRating(RatingBase):
     """Класс для подсчёта рейтинга постов"""
     rating_by_action = settings.POST_RATING_BY_ACTION
     key = 'post_rating'

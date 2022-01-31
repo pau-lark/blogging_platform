@@ -8,6 +8,7 @@ from .services.rating_service import UsersRating
 from .services.decorators import query_debugger
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
 from django.views.decorators.http import require_POST
@@ -53,8 +54,8 @@ def profile(request: HttpRequest, username: str = None) -> HttpResponse:
         user = get_user_object(username)
     else:
         user = request.user
-    user.rating = int(RATING.get_rating_by_id(user.id))
-    # request.user.subscription_list = get_user_subscriptions(request.user)
+    user.rating = RATING.get_rating_by_id(user.id)
+    request.user.subscription_list = get_user_subscriptions(request.user)
     context = {
         'user': user,
         'section': 'author'
@@ -79,70 +80,69 @@ class ProfileSettingsView(TemplateResponseMixin, View):
         return self.render_to_response({'form': form})
 
 
-class UserListView(LoginRequiredMixin, ListView):
-    context_object_name = 'users'
-    paginate_by = 3
-    template_name = 'users/list.html'
+class UserListView(LoginRequiredMixin, View):
+    paginate_by = 4
 
-    def get_user_list(self, request, **kwargs):
+    # TODO: может миксином?
+    @query_debugger
+    def get_paginate_user_list(self, request, users):
+        paginator = Paginator(object_list=users,
+                              per_page=self.paginate_by)
+        page = request.GET.get('page')
+        try:
+            users = paginator.page(page)
+        except PageNotAnInteger:
+            users = paginator.page(1)
+        except EmptyPage:
+            users = paginator.page(paginator.num_pages)
+        return users
+
+    @query_debugger
+    def get(self, request, **kwargs):
         filter_by = kwargs.get('filter_by')
         order_by = kwargs.get('order_by')
         username = kwargs.get('username')
         if not username:
             username = request.user.username
+
         users = get_filtered_and_sorted_user_list(username, filter_by, order_by)
         for user in users:
             user.rating = RATING.get_rating_by_id(user.id)
-            print(user.rating)
-        self.queryset = users
         request.user.subscription_list = get_user_subscriptions(request.user)
-        self.extra_context = {'section': 'author',
-                              'username': username,
-                              'filter': filter_by,
-                              'order': order_by}
 
-    def dispatch(self, request, *args, **kwargs):
-        self.get_user_list(request, **kwargs)
-        return super().dispatch(request, *args, **kwargs)
+        context = {
+            'users': self.get_paginate_user_list(request, users),
+            'section': 'author',
+            'username': username,
+            'filter': filter_by,
+            'order': order_by
+        }
+        return render(request, 'users/list.html', context)
 
 
-@query_debugger
-@login_required
-def user_list_view(request: HttpRequest, **kwargs) -> HttpResponse:
-    filter_by = kwargs.get('filter_by')
-    order_by = kwargs.get('order_by')
-    username = kwargs.get('username')
-    if not username:
-        username = request.user.username
-
-    users = get_filtered_and_sorted_user_list(username, filter_by, order_by)
-
-    for user in users:
-        user.rating = RATING.get_rating_by_id(user.id)
-
-    # paginator = Paginator(object_list=users, per_page=5)
-    # page = request.GET.get('page')
-    # try:
-    #     users = paginator.page(page)
-    # except PageNotAnInteger:
-    #     users = paginator.page(1)
-    # except EmptyPage:
-    #     if request.is_ajax():
-    #         return HttpResponse('')
-    #     users = paginator.page(paginator.num_pages)
-    # if request.is_ajax():
-    #     return render(request, 'images\\ajax_list.html',
-    #                   {'images': images})
-
-    request.user.subscription_list = get_user_subscriptions(request.user)
-    context = {
-        'users': users,
-        'section': 'author',
-        'username': username,
-        'filter': filter_by,
-        'order': order_by
-    }
-    return render(request, 'users/list.html', context)
+# @query_debugger
+# @login_required
+# def user_list_view(request: HttpRequest, **kwargs) -> HttpResponse:
+#     filter_by = kwargs.get('filter_by')
+#     order_by = kwargs.get('order_by')
+#     username = kwargs.get('username')
+#     if not username:
+#         username = request.user.username
+#
+#     users = get_filtered_and_sorted_user_list(username, filter_by, order_by)
+#
+#     for user in users:
+#         user.rating = RATING.get_rating_by_id(user.id)
+#
+#     request.user.subscription_list = get_user_subscriptions(request.user)
+#     context = {
+#         'users': users,
+#         'section': 'author',
+#         'username': username,
+#         'filter': filter_by,
+#         'order': order_by
+#     }
+#     return render(request, 'users/list.html', context)
 
 
 @login_required

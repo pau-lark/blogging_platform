@@ -33,10 +33,10 @@ urlpatterns = [
     path('profile/<str:username>/', views.profile,
          name='user_profile'),
     path('author_list/<str:filter_by>/<str:order_by>/',
-         views.user_list_view,
+         views.UserListView.as_view(),
          name='my_user_list'),
     path('author_list/<str:username>/<str:filter_by>/<str:order_by>/',
-         views.user_list_view,
+         views.UserListView.as_view(),
          name='user_list'),
     path('subscribe/', views.follow_user,
          name='subscribe_to_user')

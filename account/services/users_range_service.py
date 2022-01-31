@@ -13,7 +13,7 @@ def get_user_object(username: str) -> CustomUser:
     try:
         user = get_object_or_404(CustomUser, username=username)
     except CustomUser.DoesNotExist:
-        # и пишем в лог
+        # TODO: и пишем в лог
         raise Http404(f'Пользователь {username} не найден')
     return user
 
@@ -76,5 +76,6 @@ def get_filtered_and_sorted_user_list(
         username: str,
         filter_by: str = 'all',
         order_by: str = 'rating') -> QuerySet[CustomUser]:
+    """Вызывает функции фильтрации и сортировки пользователей"""
     users = _get_filtered_user_list(username, filter_by)
     return _get_sorted_user_list(users, order_by)

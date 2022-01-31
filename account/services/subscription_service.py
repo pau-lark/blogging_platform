@@ -27,10 +27,11 @@ def subscribe_user(from_user: CustomUser, to_user_username: str, action: str) ->
             RATING.incr_or_decr_rating_by_id(action='delete_subscriber',
                                              object_id=to_user.id)
         except Subscription.DoesNotExist:
-            # в лог
+            # TODO: в лог
             return False
     return True
 
 
 def get_user_subscriptions(user: CustomUser) -> QuerySet[CustomUser]:
+    """Функция возвращает qs подписок, указанного пользователя"""
     return user.subscriptions.all()
