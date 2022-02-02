@@ -1,0 +1,33 @@
+<h3>Отображение</h3>
+<div class="card mb-4">
+    <div class="list-group d-flex justify-content-around">
+        {% if username == request.user.username %}
+            <a href="{% url 'user_list' username 'all' order %}"
+               class="link-dark list-group-item-action list-group-item-light p-2 px-4
+                    {% if filter == 'all' %}active{% endif %}">
+                        Все</a>
+        {% endif %}
+        <a href="{% url 'user_list' username 'subscriptions' order %}"
+           class="link-dark list-group-item-action list-group-item-light p-2 px-4
+                {% if filter == 'subscriptions' %}active{% endif %}">
+                    Подписки</a>
+        <a href="{% url 'user_list' username 'subscribers' order %}"
+           class="link-dark list-group-item-action list-group-item-light p-2 px-4
+                {% if filter == 'subscribers' %}active{% endif %}">
+                    Подписчики</a>
+    </div>
+</div>
+<div class="card mb-4">
+    <div class="list-group d-flex justify-content-around">
+        <a href="{% url 'user_list' username filter 'rating' %}"
+           class="link-dark list-group-item-action list-group-item-light p-2 px-4
+            {% if order == 'rating' %}active{% endif %}">
+            По рейтингу
+        </a>
+        <a href="{% url 'user_list' username filter 'post_count' %}"
+           class="link-dark list-group-item-action list-group-item-light p-2 px-4
+            {% if order == 'post_count' %}active{% endif %}">
+                По количеству постов
+        </a>
+    </div>
+</div>

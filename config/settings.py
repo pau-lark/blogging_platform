@@ -152,7 +152,7 @@ REDIS_DB = 0
 
 
 USER_RATING_BY_ACTION = {
-    'registration': 0,
+    'init': 0,
     'add_subscriber': 10,
     'delete_subscriber': -10,
     'create_post': 25,
@@ -160,6 +160,7 @@ USER_RATING_BY_ACTION = {
 }
 
 POST_RATING_BY_ACTION = {
+    'init': 0,
     'view': 1,
     'like': 3,
     'unlike': -3,

@@ -1,10 +1,10 @@
 from ..models import CustomUser
 from .decorators import query_debugger
 from .rating_service import UsersRating
-from django.shortcuts import get_object_or_404
 from django.db.models.query import QuerySet
 from django.db.models import Count
 from django.http import Http404
+from django.shortcuts import get_object_or_404
 
 
 @query_debugger
@@ -19,7 +19,7 @@ def get_user_object(username: str) -> CustomUser:
 
 
 @query_debugger
-def _get_filtered_user_list(username: str, filter_by: str) -> QuerySet[CustomUser]:
+def get_filtered_user_list(username: str, filter_by: str) -> QuerySet[CustomUser]:
     """
     Получаем qs пользователей, в зависимости от фильтра
     Значения filter_by:
@@ -77,5 +77,5 @@ def get_filtered_and_sorted_user_list(
         filter_by: str = 'all',
         order_by: str = 'rating') -> QuerySet[CustomUser]:
     """Вызывает функции фильтрации и сортировки пользователей"""
-    users = _get_filtered_user_list(username, filter_by)
+    users = get_filtered_user_list(username, filter_by)
     return _get_sorted_user_list(users, order_by)

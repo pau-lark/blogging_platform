@@ -28,9 +28,9 @@ urlpatterns = [
          name='register'),
     path('profile/settings/', views.ProfileSettingsView.as_view(),
          name='profile_settings'),
-    path('profile/', views.profile,
+    path('profile/', views.ProfileView.as_view(),
          name='profile'),
-    path('profile/<str:username>/', views.profile,
+    path('profile/<str:username>/', views.ProfileView.as_view(),
          name='user_profile'),
     path('author_list/<str:filter_by>/<str:order_by>/',
          views.UserListView.as_view(),
@@ -38,6 +38,6 @@ urlpatterns = [
     path('author_list/<str:username>/<str:filter_by>/<str:order_by>/',
          views.UserListView.as_view(),
          name='user_list'),
-    path('subscribe/', views.follow_user,
+    path('subscribe/', views.FollowUserView.as_view(),
          name='subscribe_to_user')
 ]

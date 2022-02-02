@@ -13,7 +13,7 @@ REDIS = redis.StrictRedis(host=settings.REDIS_HOST,
 
 class RatingBase:
     """Базовый класс для подсчёта рейтинга"""
-    key = None
+    redis_key = None
     rating_by_action = None
 
     def get_rating_by_id(self, object_id: int) -> int:
@@ -21,17 +21,17 @@ class RatingBase:
         Получение рейтинга объекта по id, если объекта нет, он
         добавляется с рейтингом 0
         """
-        rating = REDIS.zscore(name=self.key,
+        rating = REDIS.zscore(name=self.redis_key,
                               value=object_id)
         if not rating:
-            self.incr_or_decr_rating_by_id(action='registration',
+            self.incr_or_decr_rating_by_id(action='init',
                                            object_id=object_id)
             return 0
         return int(rating)
 
     def get_range_list_by_rating(self) -> list:
         """Получение отсортированного списка по рейтингу"""
-        return REDIS.zrange(name=self.key,
+        return REDIS.zrange(name=self.redis_key,
                             start=0,
                             end=-1,
                             desc=True)
@@ -39,7 +39,7 @@ class RatingBase:
     def incr_or_decr_rating_by_id(self, action: str, object_id: int) -> None:
         """Изменение рейтинга объекта"""
         if action in self.rating_by_action:
-            REDIS.zincrby(name=self.key,
+            REDIS.zincrby(name=self.redis_key,
                           amount=self.rating_by_action.get(action),
                           value=object_id)
         else:
@@ -48,32 +48,10 @@ class RatingBase:
 
     def clear_rating_by_id(self, object_id: int) -> None:
         """Очистка рейтинг объекта"""
-        REDIS.zrem(self.key, object_id)
+        REDIS.zrem(self.redis_key, object_id)
 
 
 class UsersRating(RatingBase):
     """Класс для подсчёта рейтинга пользователей"""
     rating_by_action = settings.USER_RATING_BY_ACTION
-    key = 'user_rating'
-
-
-class PostsRating(RatingBase):
-    """Класс для подсчёта рейтинга постов"""
-    rating_by_action = settings.POST_RATING_BY_ACTION
-    key = 'post_rating'
-
-
-class PostViewCounter:
-    """Класс для подсчёта количества постов"""
-    @staticmethod
-    def _get_post_key(post_id):
-        """Получение ключа по id поста"""
-        return f'post:{post_id}:id'
-
-    def incr_view_count(self, post_id):
-        """Увеличение количества просмотров на 1"""
-        REDIS.incr(self._get_post_key(post_id))
-
-    def get_post_view_count(self, post_id):
-        """Получение количества просмотров"""
-        return REDIS.get(self._get_post_key(post_id))
+    redis_key = 'user_rating'

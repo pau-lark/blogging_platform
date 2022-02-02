@@ -27,6 +27,9 @@
                         </p>
                     {% endfor %}
                 </section>
+                <div>
+                    <h3>Рейтинг: {{ post.rating }}</h3>
+                </div>
             </article>
             <!-- Comments section-->
             <section class="mb-5">
@@ -105,7 +108,7 @@
                     </tr>
                 {% endif %}
             </table>
-            {% include 'posts/categories_sidebar.html' %}
+            {% include 'posts/sidebar_categories.html' %}
         </div>
     </div>
 {% endblock %}

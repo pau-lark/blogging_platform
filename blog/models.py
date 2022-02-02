@@ -53,7 +53,7 @@ class Post(models.Model):
                               default='draft')
 
     class Meta:
-        ordering = ['-created']
+        ordering = ['-published']
         verbose_name = 'Пост'
         verbose_name_plural = 'Посты'
 
@@ -62,12 +62,7 @@ class Post(models.Model):
 
     def get_absolute_url(self):
         return reverse(
-            'blog:post_detail', args=[
-                self.created.year,
-                self.created.month,
-                self.created.day,
-                self.slug
-            ]
+            'blog:post_detail', args=[self.id]
         )
 
     # Менеджер?

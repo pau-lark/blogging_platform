@@ -16,12 +16,18 @@
         <!-- Responsive navbar-->
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
             <div class="container">
-                <a class="navbar-brand" href="{% url 'blog:post_list' %}">Next One Blog</a>
+                <a class="navbar-brand" href="{% url 'blog:post_list' %}?filter=all&order=rating">
+                    Next One Blog
+                </a>
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
                     <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-                        <li class="nav-item"><a class="nav-link
-                            {% if section == 'post' %}active{% endif %}"
-                                href="{% url 'blog:post_list' %}">Статьи</a></li>
+                        <li class="nav-item">
+                            <a class="nav-link
+                                {% if section == 'post' %}active{% endif %}"
+                                    href="{% url 'blog:post_list' %}?filter=all&order=rating">
+                                Статьи
+                            </a>
+                        </li>
                         <li class="nav-item">
                             <a class="nav-link
                                 {% if section == 'author' %}active{% endif %}"
