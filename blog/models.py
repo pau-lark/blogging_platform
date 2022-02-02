@@ -1,3 +1,4 @@
+from .services.utils import slugify
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
@@ -45,6 +46,9 @@ class Post(models.Model):
     title = models.CharField(max_length=200,
                              verbose_name='Название')
     slug = models.SlugField(max_length=200)
+    poster = models.ImageField(upload_to='posts/%Y/%m/%d',
+                               verbose_name='Изображение',
+                               blank=True)
     created = models.DateTimeField(auto_now=True)
     updated = models.DateTimeField(auto_now_add=True)
     published = models.DateTimeField(default=timezone.now())
@@ -57,6 +61,12 @@ class Post(models.Model):
         verbose_name = 'Пост'
         verbose_name_plural = 'Посты'
 
+    def save(self, *args, **kwargs):
+        """Автоматически задает slug из title"""
+        if not self.slug:
+            self.slug = slugify(self.title)
+        return super().save(*args, **kwargs)
+
     def __str__(self):
         return self.title
 
@@ -64,11 +74,6 @@ class Post(models.Model):
         return reverse(
             'blog:post_detail', args=[self.id]
         )
-
-    # Менеджер?
-    def get_first_text_content(self):
-        content = self.contents.filter(content_type__model='text').first()
-        return content.content_object.text
 
 
 class Content(models.Model):

@@ -1,4 +1,4 @@
-from .forms import SearchForm
+from .forms import SearchForm, PostCreationForm
 from .models import Post, Category
 from .services.post_content_service import \
     get_text_preview_for_post,\
@@ -13,6 +13,9 @@ from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.views.generic.base import View
 from django.shortcuts import render, get_object_or_404
 from django.template.loader import render_to_string
+
+from django.contrib.contenttypes.models import ContentType
+from django.forms.models import modelform_factory
 
 
 RATING = PostsRating()
@@ -132,3 +135,20 @@ def post_detail_view(request, post_id):
         'section': 'post'
     }
     return render(request, 'posts/detail.html', context)
+
+
+class PostCreateUpdateView(View):
+    def get(self, request):
+        form = PostCreationForm()
+        return render(request, 'posts/creation_form.html', {'post_form': form})
+
+
+class PostContentAjaxCreateView(View):
+    def get(self, request):
+        model_name = request.GET.get('content')
+        print(model_name)
+        model = ContentType.objects.get(app_label='blog', model=model_name).model_class()
+        print(model)
+        form = modelform_factory(model, exclude=[])
+        print(form)
+        return render(request, 'posts/content/form.html', {'form': form})
