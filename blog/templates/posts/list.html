@@ -44,10 +44,10 @@
 
         <div class="col-lg-4 px-4">
             {% if username == request.user.username or username is None %}
+                {% include 'posts/users_post_list_sidebar.html' %}
+            {% elif username != request.user.username %}
                 {% include 'posts/sidebar_categories.html' %}
                 {% include 'posts/sidebar_view.html' %}
-            {% else %}
-                {% include 'posts/users_post_list_sidebar.html' %}
             {% endif %}
         </div>
     </div>

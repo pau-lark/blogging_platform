@@ -49,7 +49,7 @@ def _get_filtered_post_list(username: str, category_slug: str, filter_by: str) -
     Значения filter_by:
         'subscriptions' - фильтровать по подпискам;
         'all' - все статьи;
-        'user' - все статьи конкретного пользователя.
+        'user' - все опубликованные статьи конкретного пользователя.
     """
     posts = get_post_list_by_category(category_slug)
     print(posts)

@@ -27,8 +27,8 @@ class PostPublishedManger(models.Manager):
 
 
 class Post(models.Model):
-    published_manager = PostPublishedManger()
     objects = models.Manager()
+    published_manager = PostPublishedManger()
 
     STATUS_CHOICES = (
         ('draft', 'Черновик'),
@@ -46,9 +46,9 @@ class Post(models.Model):
     title = models.CharField(max_length=200,
                              verbose_name='Название')
     slug = models.SlugField(max_length=200)
-    poster = models.ImageField(upload_to='posts/%Y/%m/%d',
-                               verbose_name='Изображение',
-                               blank=True)
+    preview_image = models.ImageField(upload_to='posts/%Y/%m/%d',
+                                      verbose_name='Изображение',
+                                      blank=True)
     created = models.DateTimeField(auto_now=True)
     updated = models.DateTimeField(auto_now_add=True)
     published = models.DateTimeField(default=timezone.now())

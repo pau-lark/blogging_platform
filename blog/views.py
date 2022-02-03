@@ -9,10 +9,13 @@ from .services.posts_range_service import \
     get_post_object
 from .services.post_rating_service import PostsRating, PostViewCounter
 from account.services.decorators import query_debugger
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.views.generic.base import View
+from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.shortcuts import render, get_object_or_404
 from django.template.loader import render_to_string
+from django.urls import reverse_lazy
 
 from django.contrib.contenttypes.models import ContentType
 from django.forms.models import modelform_factory
@@ -73,28 +76,6 @@ class PostListView(View):
         return render(request, 'posts/list.html', context)
 
 
-# вариант 2
-@query_debugger
-def post_list_view(request, category_slug=None):
-    if category_slug:
-        posts = Post.published_manager.\
-            filter(category__slug=category_slug)
-        category = get_object_or_404(Category,
-                                     slug=category_slug)
-    else:
-        posts = Post.published_manager.all()
-        category = None
-    for post in posts:
-        preview_content = post.contents.filter(content_type__model='text').first()
-        preview_content = preview_content.content_object
-        post.preview_content = preview_content.text
-
-    return render(request, 'posts/list.html',
-                  {'object_list': posts,
-                   'section': 'post',
-                   'category': category})
-
-
 class PostDetailView(View):
     post_view_counter = PostViewCounter()
 
@@ -116,39 +97,51 @@ class PostDetailView(View):
         return render(request, 'posts/detail.html', context)
 
 
-@query_debugger
-def post_detail_view(request, post_id):
-    post = get_object_or_404(Post, id=post_id)
-    contents = []
-    # prefetch ускоряет ~ с 0.09 до 0.08, возможно, принципиально на жирных постах
-    for content in post.contents.all():
-        content_object = content.content_object
-        model_name = content.content_type.model
-        content_template_response = render_to_string(f'posts/content/{model_name}.html',
-                                                     {'content_object': content_object})
-        contents.append(content_template_response)
-
-        post.rating = RATING.get_rating_by_id(post.id)
-    context = {
-        'post': post,
-        'contents': contents,
-        'section': 'post'
-    }
-    return render(request, 'posts/detail.html', context)
-
-
 class PostCreateUpdateView(View):
     def get(self, request):
         form = PostCreationForm()
-        return render(request, 'posts/creation_form.html', {'post_form': form})
+        return render(request, 'posts/edit/create_form.html', {'post_form': form})
+
+    def post(self, request):
+        form = PostCreationForm(request.POST)
 
 
-class PostContentAjaxCreateView(View):
-    def get(self, request):
-        model_name = request.GET.get('content')
-        print(model_name)
-        model = ContentType.objects.get(app_label='blog', model=model_name).model_class()
-        print(model)
-        form = modelform_factory(model, exclude=[])
-        print(form)
-        return render(request, 'posts/content/form.html', {'form': form})
+class PostEditMixin:
+    form_class = PostCreationForm
+    model = Post
+    success_url = None
+    template_name = 'posts/edit/create_form.html'
+
+    def form_valid(self, form):
+        form.instance.author = self.request.user
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        self.success_url = reverse_lazy('blog:post_edit',
+                                        kwargs={'post_id': self.object.id})
+        return super().get_success_url()
+
+
+class PostCreateView(LoginRequiredMixin, PostEditMixin, CreateView):
+    pass
+
+
+class PostUpdateView(LoginRequiredMixin, PostEditMixin, UpdateView):
+    pk_url_kwarg = 'post_id'
+
+
+class PostDeleteView(LoginRequiredMixin, DeleteView):
+    pass
+
+
+class PostPreviewEditView(LoginRequiredMixin, View):
+    @query_debugger
+    def get(self, request: HttpRequest, post_id: int) -> HttpResponse:
+        post = get_post_object(post_id)
+        contents = get_post_content(post)
+
+        context = {
+            'post': post,
+            'contents': contents
+        }
+        return render(request, 'posts/edit/preview.html', context)

@@ -5,11 +5,14 @@ app_name = 'blog'
 
 urlpatterns = [
     path('posts/create/',
-         views.PostCreateUpdateView.as_view(),
+         views.PostCreateView.as_view(),
          name='post_create'),
-    path('posts/create/add_content/',
-         views.PostContentAjaxCreateView.as_view(),
-         name='add_post_content'),
+    path('posts/edit/header/<int:post_id>/',
+         views.PostUpdateView.as_view(),
+         name='post_header_edit'),
+    path('posts/edit/<int:post_id>/',
+         views.PostPreviewEditView.as_view(),
+         name='post_edit'),
     path('posts/',
          views.PostListView.as_view(),
          name='post_list'),
