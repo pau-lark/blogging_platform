@@ -54,6 +54,7 @@ def _get_filtered_post_list(username: str, category_slug: str, filter_by: str) -
     """
     posts = get_post_list_by_category(category_slug)
     print(posts)
+    print(filter_by)
     if username:
         if filter_by == 'subscriptions':
             subscription_user_list = get_filtered_user_list(username, filter_by)
@@ -98,10 +99,11 @@ def _get_sorted_post_list(post_list: QuerySet[Post], order_by: str):
         'rating' - сортировать по рейтингу;
         'date' - сортировать по date.
     """
-    if order_by == 'date':
-        return _get_order_by_date(post_list)
-    # во всех остальных случаях - по рейтингу
-    return _get_order_by_rating(post_list)
+    print(post_list)
+    if order_by == 'rating':
+        return _get_order_by_rating(post_list)
+    # во всех остальных случаях - по дате
+    return _get_order_by_date(post_list)
 
 
 def get_filtered_and_sorted_post_list(
@@ -111,6 +113,7 @@ def get_filtered_and_sorted_post_list(
         order_by: str = 'rating') -> QuerySet[Post]:
     """Вызывает функции фильтрации и сортировки постов"""
     posts = _get_filtered_post_list(username, category_slug, filter_by)
+    print(posts)
     return _get_sorted_post_list(posts, order_by)
 
 

@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+{% load thumbnail %}
+{% load static %}
+
+{% block title %}Статьи{% endblock %}
+
+{% block content %}
+    <div class="row w-75 mx-auto my-3">
+        <div class="col-lg-8">
+            <h2 class="pb-3">
+                <span class="text-muted">Посты пользователя</span>
+                <a class="link-dark" href="{% url 'user_profile' username %}">{{ username }}</a>
+            </h2>
+            {% for post in posts %}
+                <div class="card mb-4">
+                    {% if post.preview_image %}
+                        {% thumbnail post.preview_image "850x500" crop="100%" as thumb_img %}
+                            <img class="card-img-top" src="{{ thumb_img.url }}" alt=""/>
+                        {% endthumbnail %}
+                    {% else %}
+                        <img class="card-img-top" src="https://dummyimage.com/850x500/dee2e6/6c757d.jpg" alt="..." />
+                    {% endif %}
+                    <div class="card-body">
+                        <div class="small text-muted">{{ post.published }}</div>
+                        <h2 class="card-title">{{ post.title }}</h2>
+                        <p class="card-text">{{ post.preview_content|truncatewords:40 }}</p>
+                        <div class="d-flex">
+                            <a class="btn btn-dark" href="{{ post.get_absolute_url }}">Читать далее</a>
+                            <div class="mx-5 d-flex">
+                                <div class="px-2">
+                                    <img src="{% static 'assets/rating.png' %}" alt="">
+                                    {{ post.rating }}
+                                </div>
+                                <div class="px-2">
+                                    <img src="{% static 'assets/view.png' %}" alt="">
+                                    {{ post.view_count }}
+                                </div>
+                                <div class="px-2">
+                                    <img src="{% static 'assets/like.png' %}" alt="">
+                                    0
+                                </div>
+                                <div class="px-2">
+                                    <img src="{% static 'assets/comment.png' %}" alt="">
+                                    {{ post.comments_count }}
+                                </div>
+                            </div>
+                            {% if mine %}
+                                <div class="d-flex">
+                                    <a class="btn btn-dark" href="{% url 'blog:post_edit' post.id %}">Изменить</a>
+                                    <a class="btn btn-dark" href="{% url 'blog:post_delete' post.id %}">Удалить</a>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {%  empty %}
+                <h2>Не найдено ни одного поста</h2>
+            {% endfor %}
+            <!-- Pagination-->
+            {% if posts.has_other_pages %}
+                <nav aria-label="Pagination">
+                    <ul class="pagination justify-content-center my-4">
+                        {% for i in posts.paginator.page_range %}
+                            {% if posts.number == i %}
+                                <li class="page-item active" aria-current="page">
+                                    <a class="page-link" href="?page={{ i }}">{{ i }}</a>
+                                </li>
+                            {% else %}
+                                <li class="page-item"><a class="page-link" href="?page={{ i }}">{{ i }}</a></li>
+                            {% endif %}
+                        {% endfor %}
+                    </ul>
+                </nav>
+            {% endif %}
+        </div>
+
+        <div class="col-lg-4 px-4">
+            {% include 'posts/sidebar_widgets/user_categories_widget.html' %}
+            {% if filter_list %}
+                {% include 'posts/sidebar_widgets/post_status_widget.html' %}
+            {% endif %}
+            {% if order_list %}
+                {% include 'posts/sidebar_widgets/user_order_widget.html' %}
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

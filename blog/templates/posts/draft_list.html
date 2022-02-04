@@ -20,6 +20,7 @@
                         <div class="small text-muted">{{ post.published }}</div>
                         <h2 class="card-title">{{ post.title }}</h2>
                         <p class="card-text">{{ post.preview_content|truncatewords:40 }}</p>
+                        <hr>
                         <div class="d-flex">
                             <a class="btn btn-dark" href="{% url 'blog:post_edit' post.id %}">Изменить</a>
                             <a class="btn btn-dark" href="{% url 'blog:post_delete' post.id %}">Удалить</a>

@@ -1,11 +1,14 @@
 from ..models import Post, Text
 from account.services.decorators import query_debugger
 from django.template.loader import render_to_string
+from typing import Union
 
 
-def get_text_preview_for_post(post: Post) -> Text:
+def get_text_preview_for_post(post: Post) -> Union[Text, None]:
     preview_content = post.contents.filter(content_type__model='text').first()
-    return preview_content.content_object.text
+    if preview_content:
+        return preview_content.content_object.text
+    return None
 
 
 @query_debugger

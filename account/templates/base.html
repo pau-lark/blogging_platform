@@ -50,7 +50,7 @@
                         </a>
                         <div class="dropdown-menu dropdown-menu-end animate slideIn" aria-labelledby="navbarDropdown">
                             <a class="dropdown-item" href="{% url 'blog:post_create' %}">Написать статью</a>
-                            <a class="dropdown-item" href="{% url 'blog:draft_list' %}">Черновики</a>
+                            <a class="dropdown-item" href="{% url 'blog:users_post_list' request.user.username %}?filter=publish">Мои посты</a>
                             <a class="dropdown-item" href="{% url 'profile' %}">Профиль</a>
                             <a class="dropdown-item" href="{% url 'profile_settings' %}">Настройки</a>
                             <div class="dropdown-divider"></div>

@@ -43,7 +43,6 @@ class PostListBaseView(PaginatorMixin, View):
     """
     paginate_by = 5
     template_name = 'posts/list.html'
-    post_view_counter = PostViewCounter()
     posts = None
     category = None
     username = None
@@ -57,8 +56,11 @@ class PostListBaseView(PaginatorMixin, View):
         if not self.filter_by:
             self.filter_by = request.GET.get('filter')
         self.order_by = request.GET.get('order')
+
         if not username and request.user.is_authenticated:
             self.username = request.user.username
+        else:
+            self.username = username
         if category_slug:
             self.category = get_category_by_slug(category_slug)
 
@@ -66,16 +68,19 @@ class PostListBaseView(PaginatorMixin, View):
                                                   category_slug,
                                                   self.filter_by,
                                                   self.order_by)
-        for post in posts:
-            post = self.get_post_content_and_attrs(post)
-        self.posts = posts
+        print(self.posts)
+        if posts:
+            for post in posts:
+                post = self.get_post_content_and_attrs(post)
+            self.posts = posts
 
         return render(request, self.template_name, self.get_context_data())
 
     def get_post_content_and_attrs(self, post: Post):
+        post_view_counter = PostViewCounter()
         post.preview_content = get_text_preview_for_post(post)
         post.rating = RATING.get_rating_by_id(post.id)
-        post.view_count = self.post_view_counter.get_post_view_count(post.id)
+        post.view_count = post_view_counter.get_post_view_count(post.id)
         # TODO: comments
         post.comments_count = 0
         return post
@@ -111,11 +116,13 @@ class UserPostListView(PostListBaseView):
     Для собственный постов возможна фильтрация по статусу,
     чужие посты выводятся со статусом 'опубликовано'
     """
+    template_name = 'posts/user_post_list.html'
+
     def get(self, request: HttpRequest,
             username: str = None,
             category_slug: str = None) -> HttpResponse:
 
-        if self.username != self.request.user.username:
+        if username != self.request.user.username:
             self.filter_by = 'publish'
         return super().get(request, username, category_slug)
 
@@ -123,10 +130,10 @@ class UserPostListView(PostListBaseView):
         context = super().get_context_data()
         if self.username == self.request.user.username:
             context['filter_list'] = settings.USER_POST_STATUS_FILTER_LIST
+            context['mine'] = True
         if self.filter_by == 'publish':
             context['order_list'] = settings.POST_ORDER_LIST
-        else:
-            self.template_name = 'posts/draft_list.html'
+        return context
 
 
 class PostDetailView(View):
