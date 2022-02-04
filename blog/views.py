@@ -6,7 +6,9 @@ from .services.post_content_service import \
 from .services.posts_range_service import \
     get_filtered_and_sorted_post_list,\
     get_category_by_slug,\
-    get_post_object
+    get_post_object,\
+    get_draft_list
+from .services.view_mixins import PaginatorMixin
 from .services.post_rating_service import PostsRating, PostViewCounter
 from account.services.decorators import query_debugger
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -29,23 +31,28 @@ def index(request):
     return render(request, 'base.html', {'search_form': form})
 
 
+
+
+
 # TODO: пагинация
-class PostListView(View):
+class PostListView(PaginatorMixin, View):
+    """
+    View для вывода фильтрованного списка статей для
+    авторизованного пользователя
+    и списка всех статей для неавторизованного.
+    Также производится сортировка и фильтрация по категориям.
+    К каждой статье добавляется превью, рейтинг,
+    количество лайков и просмотров
+    """
+    paginate_by = 5
     category = None
+    template_name = 'posts/list.html'
     post_view_counter = PostViewCounter()
 
     @query_debugger
     def get(self, request: HttpRequest,
             username: str = None,
             category_slug: str = None) -> HttpResponse:
-        """
-        Функция для вывода фильтрованного списка статей для
-        авторизованного пользователя
-        и списка всех статей для неавторизованного.
-        Также производится сортировка и фильтрация по категориям.
-        К каждой статье добавляется превью, рейтинг,
-        количество лайков и просмотров
-        """
         filter_by = request.GET.get('filter')
         order_by = request.GET.get('order')
         if not username and request.user.is_authenticated:
@@ -55,8 +62,6 @@ class PostListView(View):
                                                   category_slug,
                                                   filter_by,
                                                   order_by)
-        if category_slug:
-            self.category = get_category_by_slug(category_slug)
 
         for post in posts:
             post.preview_content = get_text_preview_for_post(post)
@@ -65,15 +70,33 @@ class PostListView(View):
             # TODO: comments
             post.comments_count = 0
 
+        if category_slug:
+            self.category = get_category_by_slug(category_slug)
+
         context = {
-            'posts': posts,
+            'posts': self.get_paginate_list(posts),
             'category': self.category,
             'username': username,
             'section': 'post',
             'filter': filter_by,
             'order': order_by
         }
-        return render(request, 'posts/list.html', context)
+
+        return render(request, self.template_name, context)
+
+
+class DraftListView(LoginRequiredMixin, PaginatorMixin, View):
+    """View для вывода списка черновиков"""
+    paginate_by = 5
+    template_name = 'posts/draft_list.html'
+
+    def get(self, request):
+        drafts = get_draft_list(request.user)
+        context = {
+            'posts': self.get_paginate_list(drafts),
+            'sidebar_status': 'draft'
+        }
+        return render(request, self.template_name, context)
 
 
 class PostDetailView(View):
@@ -95,15 +118,6 @@ class PostDetailView(View):
             'section': post
         }
         return render(request, 'posts/detail.html', context)
-
-
-class PostCreateUpdateView(View):
-    def get(self, request):
-        form = PostCreationForm()
-        return render(request, 'posts/edit/create_form.html', {'post_form': form})
-
-    def post(self, request):
-        form = PostCreationForm(request.POST)
 
 
 class PostEditMixin:
@@ -131,7 +145,16 @@ class PostUpdateView(LoginRequiredMixin, PostEditMixin, UpdateView):
 
 
 class PostDeleteView(LoginRequiredMixin, DeleteView):
-    pass
+    model = Post
+    pk_url_kwarg = 'post_id'
+    success_url = reverse_lazy('blog:draft_list')
+    template_name = 'posts/edit/delete_form.html'
+
+    def delete(self, request, *args, **kwargs):
+        post = self.get_object()
+        for content in post.contents.all():
+            content.content_object.delete()
+        return super().delete(request, *args, **kwargs)
 
 
 class PostPreviewEditView(LoginRequiredMixin, View):

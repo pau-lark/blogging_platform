@@ -109,3 +109,7 @@ def get_filtered_and_sorted_post_list(
     """Вызывает функции фильтрации и сортировки постов"""
     posts = _get_filtered_post_list(username, category_slug, filter_by)
     return _get_sorted_post_list(posts, order_by)
+
+
+def get_draft_list(user) -> QuerySet[Post]:
+    return user.posts.filter(status='draft')

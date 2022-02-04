@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}Удалить пост{% endblock %}
+
+{% block content %}
+    <div class="w-75 mx-auto my-3">
+        <h2 class="py-4">Вы точно хотите удалить "{{ object }}"?</h2>
+        <form action="" method="post">
+            {% csrf_token %}
+            <input type="submit" class="btn btn-dark" value="Точно">
+        </form>
+    </div>
+{% endblock %}

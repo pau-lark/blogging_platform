@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% load thumbnail %}
+{% load static %}
+
+{% block title %}Черновики{% endblock %}
+
+{% block content %}
+    <div class="row w-75 mx-auto my-3">
+        <div class="col-lg-8">
+            {% for post in posts %}
+                <div class="card mb-4">
+                    {% if post.preview_image %}
+                        {% thumbnail post.preview_image "850x500" crop="100%" as thumb_img %}
+                            <img class="card-img-top" src="{{ thumb_img.url }}" alt=""/>
+                        {% endthumbnail %}
+                    {% else %}
+                        <img class="card-img-top" src="https://dummyimage.com/850x500/dee2e6/6c757d.jpg" alt="..." />
+                    {% endif %}
+                    <div class="card-body">
+                        <div class="small text-muted">{{ post.published }}</div>
+                        <h2 class="card-title">{{ post.title }}</h2>
+                        <p class="card-text">{{ post.preview_content|truncatewords:40 }}</p>
+                        <div class="d-flex">
+                            <a class="btn btn-dark" href="{% url 'blog:post_edit' post.id %}">Изменить</a>
+                            <a class="btn btn-dark" href="{% url 'blog:post_delete' post.id %}">Удалить</a>
+                        </div>
+                    </div>
+                </div>
+            {%  empty %}
+                <h2>Не найдено ни одного Черновика</h2>
+            {% endfor %}
+        </div>
+
+        <div class="col-lg-4 px-4">
+            {% include 'posts/post_status_sidebar.html' %}
+        </div>
+    </div>
+{% endblock %}

@@ -7,8 +7,8 @@ from .services.users_range_service import \
     get_user_object
 from .services.rating_service import UsersRating
 from .services.decorators import query_debugger
+from blog.services.view_mixins import PaginatorMixin
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
 from django.views.generic.base import View, TemplateResponseMixin
@@ -78,22 +78,8 @@ class ProfileSettingsView(TemplateResponseMixin, View):
         return self.render_to_response({'form': form})
 
 
-class UserListView(LoginRequiredMixin, View):
+class UserListView(LoginRequiredMixin, PaginatorMixin, View):
     paginate_by = 4
-
-    # TODO: может миксином?
-    @query_debugger
-    def get_paginate_user_list(self, request, users):
-        paginator = Paginator(object_list=users,
-                              per_page=self.paginate_by)
-        page = request.GET.get('page')
-        try:
-            users = paginator.page(page)
-        except PageNotAnInteger:
-            users = paginator.page(1)
-        except EmptyPage:
-            users = paginator.page(paginator.num_pages)
-        return users
 
     @query_debugger
     def get(self, request, **kwargs):
@@ -109,7 +95,7 @@ class UserListView(LoginRequiredMixin, View):
         request.user.subscription_list = get_user_subscriptions(request.user)
 
         context = {
-            'users': self.get_paginate_user_list(request, users),
+            'users': self.get_paginate_list(users),
             'section': 'author',
             'username': username,
             'filter': filter_by,
