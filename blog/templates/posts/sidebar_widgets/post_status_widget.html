@@ -1,0 +1,16 @@
+<div class="card mb-4">
+    <div class="list-group d-flex justify-content-around">
+        {% for status_value, status_name in status_list.items %}
+            <a href="{% url 'blog:users_post_list' request.user.username %}?filter=all&order=date"
+                class="link-dark list-group-item-action list-group-item-light p-2 px-4
+                    {% if not sidebar_status %}active{% endif %}">
+                   Опубликованные
+            </a>
+        {% endfor %}
+        <a href="{% url 'blog:draft_list' %}"
+           class="link-dark list-group-item-action list-group-item-light p-2 px-4
+                {% if sidebar_status %}active{% endif %}">
+                    Черновики
+        </a>
+    </div>
+</div>

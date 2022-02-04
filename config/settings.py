@@ -167,6 +167,18 @@ POST_RATING_BY_ACTION = {
     'comment': 5
 }
 
+POST_FILTER_LIST = {
+    'all': 'Все',
+    'subscriptions': 'Подписки'
+}
+POST_ORDER_LIST = {
+    'rating': 'По рейтингу',
+    'date': 'Последние'
+}
+USER_POST_STATUS_FILTER_LIST = {
+    'publish': 'Публикации',
+    'draft': 'Черновики'
+}
 
 ALPHABET = {
     'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd', 'е': 'e', 'ё': 'yo', 'ж': 'zh', 'з': 'z', 'и': 'i',

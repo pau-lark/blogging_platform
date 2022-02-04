@@ -1,0 +1,15 @@
+<div class="card mb-4">
+    <div class="list-group d-flex justify-content-around">
+        {% for order_value, order_name in order_list.items %}
+            <a {% if category %}
+                    href="{% url 'blog:post_list_by_category' category.slug %}?filter={{ filter }}&order={{ order_value }}"
+               {% else %}
+                    href="{% url 'blog:post_list' %}?filter={{ filter }}&order={{ order_value }}"
+               {% endif %}
+               class="link-dark list-group-item-action list-group-item-light p-2 px-4
+                    {% if order == order_value %}active{% endif %}">
+                        {{ order_name}}
+            </a>
+        {% endfor %}
+    </div>
+</div>

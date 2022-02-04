@@ -72,14 +72,12 @@
         </div>
 
         <div class="col-lg-4 px-4">
-            {% if username == request.user.username %}
-                {% include 'posts/post_status_sidebar.html' %}
+            {% include 'posts/sidebar_widgets/categories_widget.html' %}
+            {% if filter_list %}
+                {% include 'posts/sidebar_widgets/filter_widget.html' %}
             {% endif %}
-            {% if username == request.user.username or username is None %}
-                {% include 'posts/users_post_list_sidebar.html' %}
-            {% elif username != request.user.username %}
-                {% include 'posts/sidebar_categories.html' %}
-                {% include 'posts/sidebar_view.html' %}
+            {% if order_list %}
+                {% include 'posts/sidebar_widgets/order_widget.html' %}
             {% endif %}
         </div>
     </div>

@@ -8,15 +8,15 @@ from .services.posts_range_service import \
     get_category_by_slug,\
     get_post_object,\
     get_draft_list
-from .services.view_mixins import PaginatorMixin
+from .services.view_mixins import PaginatorMixin, PostEditMixin
 from .services.post_rating_service import PostsRating, PostViewCounter
 from account.services.decorators import query_debugger
+from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.views.generic.base import View
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
-from django.shortcuts import render, get_object_or_404
-from django.template.loader import render_to_string
+from django.shortcuts import render
 from django.urls import reverse_lazy
 
 from django.contrib.contenttypes.models import ContentType
@@ -31,72 +31,102 @@ def index(request):
     return render(request, 'base.html', {'search_form': form})
 
 
-
-
-
-# TODO: пагинация
-class PostListView(PaginatorMixin, View):
+class PostListBaseView(PaginatorMixin, View):
     """
-    View для вывода фильтрованного списка статей для
+    Базовый view для вывода фильтрованного списка статей для
     авторизованного пользователя
     и списка всех статей для неавторизованного.
     Также производится сортировка и фильтрация по категориям.
     К каждой статье добавляется превью, рейтинг,
-    количество лайков и просмотров
+    количество лайков и просмотров.
+    Для пагинации используется миксин
     """
     paginate_by = 5
-    category = None
     template_name = 'posts/list.html'
     post_view_counter = PostViewCounter()
+    posts = None
+    category = None
+    username = None
+    filter_by = None
+    order_by = None
 
     @query_debugger
-    def get(self, request: HttpRequest,
-            username: str = None,
+    def get(self, request: HttpRequest, username: str = None,
             category_slug: str = None) -> HttpResponse:
-        filter_by = request.GET.get('filter')
-        order_by = request.GET.get('order')
+
+        if not self.filter_by:
+            self.filter_by = request.GET.get('filter')
+        self.order_by = request.GET.get('order')
         if not username and request.user.is_authenticated:
-            username = request.user.username
-
-        posts = get_filtered_and_sorted_post_list(username,
-                                                  category_slug,
-                                                  filter_by,
-                                                  order_by)
-
-        for post in posts:
-            post.preview_content = get_text_preview_for_post(post)
-            post.rating = RATING.get_rating_by_id(post.id)
-            post.view_count = self.post_view_counter.get_post_view_count(post.id)
-            # TODO: comments
-            post.comments_count = 0
-
+            self.username = request.user.username
         if category_slug:
             self.category = get_category_by_slug(category_slug)
 
+        posts = get_filtered_and_sorted_post_list(self.username,
+                                                  category_slug,
+                                                  self.filter_by,
+                                                  self.order_by)
+        for post in posts:
+            post = self.get_post_content_and_attrs(post)
+        self.posts = posts
+
+        return render(request, self.template_name, self.get_context_data())
+
+    def get_post_content_and_attrs(self, post: Post):
+        post.preview_content = get_text_preview_for_post(post)
+        post.rating = RATING.get_rating_by_id(post.id)
+        post.view_count = self.post_view_counter.get_post_view_count(post.id)
+        # TODO: comments
+        post.comments_count = 0
+        return post
+
+    def get_context_data(self):
         context = {
-            'posts': self.get_paginate_list(posts),
+            'posts': self.get_paginate_list(self.posts),
             'category': self.category,
-            'username': username,
-            'section': 'post',
-            'filter': filter_by,
-            'order': order_by
+            'username': self.username,
+            'filter': self.filter_by,
+            'order': self.order_by,
+            'section': 'post'
         }
+        return context
 
-        return render(request, self.template_name, context)
+
+class PostListView(PostListBaseView):
+    """
+    View для отображения главной страницы с постами
+    Если пользователь не авторизован, ему недоступны фильтры
+    """
+    def get_context_data(self):
+        context = super().get_context_data()
+        context['order_list'] = settings.POST_ORDER_LIST
+        if self.request.user.is_authenticated:
+            context['filter_list'] = settings.POST_FILTER_LIST
+        return context
 
 
-class DraftListView(LoginRequiredMixin, PaginatorMixin, View):
-    """View для вывода списка черновиков"""
-    paginate_by = 5
-    template_name = 'posts/draft_list.html'
+class UserPostListView(PostListBaseView):
+    """
+    View для вывода списка статей выбранного пользователя.
+    Для собственный постов возможна фильтрация по статусу,
+    чужие посты выводятся со статусом 'опубликовано'
+    """
+    def get(self, request: HttpRequest,
+            username: str = None,
+            category_slug: str = None) -> HttpResponse:
 
-    def get(self, request):
-        drafts = get_draft_list(request.user)
-        context = {
-            'posts': self.get_paginate_list(drafts),
-            'sidebar_status': 'draft'
-        }
-        return render(request, self.template_name, context)
+        if self.username != self.request.user.username:
+            self.filter_by = 'publish'
+        return super().get(request, username, category_slug)
+
+    def get_context_data(self):
+        context = super().get_context_data()
+        if self.username == self.request.user.username:
+            context['filter_list'] = settings.USER_POST_STATUS_FILTER_LIST
+        if self.filter_by == 'publish':
+            context['order_list'] = settings.POST_ORDER_LIST
+        else:
+            self.template_name = 'posts/draft_list.html'
 
 
 class PostDetailView(View):
@@ -118,22 +148,6 @@ class PostDetailView(View):
             'section': post
         }
         return render(request, 'posts/detail.html', context)
-
-
-class PostEditMixin:
-    form_class = PostCreationForm
-    model = Post
-    success_url = None
-    template_name = 'posts/edit/create_form.html'
-
-    def form_valid(self, form):
-        form.instance.author = self.request.user
-        return super().form_valid(form)
-
-    def get_success_url(self):
-        self.success_url = reverse_lazy('blog:post_edit',
-                                        kwargs={'post_id': self.object.id})
-        return super().get_success_url()
 
 
 class PostCreateView(LoginRequiredMixin, PostEditMixin, CreateView):

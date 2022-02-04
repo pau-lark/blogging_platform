@@ -1,6 +1,7 @@
-from django.contrib.auth.mixins import LoginRequiredMixin
+from ..forms import PostCreationForm
+from ..models import Post
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.views.generic.base import View
+from django.urls import reverse_lazy
 
 
 class PaginatorMixin:
@@ -17,3 +18,19 @@ class PaginatorMixin:
         except EmptyPage:
             object_list = paginator.page(paginator.num_pages)
         return object_list
+
+
+class PostEditMixin:
+    form_class = PostCreationForm
+    model = Post
+    success_url = None
+    template_name = 'posts/edit/create_form.html'
+
+    def form_valid(self, form):
+        form.instance.author = self.request.user
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        self.success_url = reverse_lazy('blog:post_edit',
+                                        kwargs={'post_id': self.object.id})
+        return super().get_success_url()

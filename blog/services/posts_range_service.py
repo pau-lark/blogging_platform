@@ -49,7 +49,8 @@ def _get_filtered_post_list(username: str, category_slug: str, filter_by: str) -
     Значения filter_by:
         'subscriptions' - фильтровать по подпискам;
         'all' - все статьи;
-        'user' - все опубликованные статьи конкретного пользователя.
+        'publish' - все опубликованные статьи конкретного пользователя;
+        'draft' - свои черновики.
     """
     posts = get_post_list_by_category(category_slug)
     print(posts)
@@ -57,8 +58,10 @@ def _get_filtered_post_list(username: str, category_slug: str, filter_by: str) -
         if filter_by == 'subscriptions':
             subscription_user_list = get_filtered_user_list(username, filter_by)
             return posts.filter(author__in=subscription_user_list)
-        elif filter_by == 'user':
+        elif filter_by == 'publish':
             return posts.filter(author__username=username)
+        elif filter_by == 'draft':
+            return Post.objects.filter(author__username=username, status='draft')
         elif filter_by == 'all':
             return posts.exclude(author__username=username)
     return posts
