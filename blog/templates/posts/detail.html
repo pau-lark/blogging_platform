@@ -13,22 +13,49 @@
                     <h1 class="fw-bolder mb-1">{{ post.title }}</h1>
                     <!-- Post meta content-->
                     <div class="text-muted fst-italic mb-2">{{ post.created }}</div>
-                    <!-- Post categories-->
-                    <a class="badge bg-secondary text-decoration-none link-light" href="#!">Web Design</a>
-                    <a class="badge bg-secondary text-decoration-none link-light" href="#!">Freebies</a>
                 </header>
                 <!-- Preview image figure-->
-                <figure class="mb-4"><img class="img-fluid rounded" src="https://dummyimage.com/900x400/ced4da/6c757d.jpg" alt="..." /></figure>
+                <figure class="mb-4">
+                    {% if post.preview_image %}
+                        <img class="img-fluid rounded" src="{{ post.preview_image.url }}" alt=""/>
+                    {% else %}
+                        <img class="img-fluid rounded" src="https://dummyimage.com/900x400/ced4da/6c757d.jpg" alt="..." />
+                    {% endif %}
+                </figure>
                 <!-- Post content-->
                 <section class="mb-5">
-                    {% for content in contents %}
+                    {% for content_response, content_object in contents %}
                         <p class="fs-5 mb-4">
-                            {{ content }}
+                            {{ content_response }}
                         </p>
                     {% endfor %}
                 </section>
-                <div>
-                    <h3>Рейтинг: {{ post.rating }}</h3>
+                            <hr>
+                <div class="m-3 d-flex justify-content-around">
+                    <div class="px-2">
+                        <img src="{% static 'assets/rating.svg' %}" alt="">
+                        {{ post.rating }}
+                    </div>
+                    <div class="px-2">
+                        <img src="{% static 'assets/view.svg' %}" alt="">
+                        {{ post.view_count }}
+                    </div>
+                    <div class="px-2">
+                        {% if request.user in post.users_like.all %}
+                            <a href="#" data-post_id="{{ post.id }}"
+                               data-action="unlike" class="like link-dark">
+                                <img class="img-like" src="{% static 'assets/unlike.svg' %}" alt="">
+                            </a>
+                        {% else %}
+                            <a href="#" data-post_id="{{ post.id }}"
+                               data-action="like" class="like link-dark">
+                                <img class="img-like" src="{% static 'assets/like.svg' %}" alt="">
+                            </a>
+                        {% endif %}
+                        <span id="like-count">
+                            {{ post.users_like.count }}
+                        </span>
+                    </div>
                 </div>
             </article>
             <!-- Comments section-->
@@ -77,36 +104,42 @@
 
         <div class="col-lg-4">
             <table class="card mb-4 p-2 table">
-                <tr>
-                    <td>Автор:</td>
-                    <td><a href="#" class="link-dark">{{ post.author.username }}</a></td>
-                </tr>
-                <tr>
-                    <td>Рейтинг: </td>
-                    <td>1000000</td>
-                </tr>
-                {% if post.author != request.user %}
+                {% with user=post.author %}
                     <tr>
-                        <td colspan="2">
-                            {% with subscriptions=request.user.subscriptions.all %}
-                                <span class="subscribed">
-                                    {% if user in subscriptions %}
-                                        <p>Вы подписаны</p>
-                                    {% endif %}
-                                </span>
-                                <a href="#" class="subscription btn btn-outline-dark"
-                                    data-name="{{ user.username }}"
-                                    data-action="{% if user in subscriptions %}delete{% else %}add{% endif %}">
-                                        {% if user in subscriptions %}
-                                            Отписаться
-                                        {% else %}
-                                            Подписаться
-                                        {% endif %}
-                                </a>
-                            {% endwith %}
+                        <td>Автор:</td>
+                        <td>
+                            <a href="{{ user.get_absolute_url }}" class="link-dark">
+                                {{ user.username }}
+                            </a>
                         </td>
                     </tr>
-                {% endif %}
+                    <tr>
+                        <td>Рейтинг: </td>
+                        <td>{{ user.get_user_rating }}</td>
+                    </tr>
+                    {% if user != request.user %}
+                        <tr>
+                            <td colspan="2">
+                                {% with subscriptions=request.user.subscriptions.all %}
+                                    <span class="subscribed" data-name="{{ user.username }}">
+                                        {% if user in subscriptions %}
+                                            <p>Вы подписаны</p>
+                                        {% endif %}
+                                    </span>
+                                    <a href="#" class="subscription btn btn-outline-dark"
+                                        data-name="{{ user.username }}"
+                                        data-action="{% if user in subscriptions %}delete{% else %}add{% endif %}">
+                                            {% if user in subscriptions %}
+                                                Отписаться
+                                            {% else %}
+                                                Подписаться
+                                            {% endif %}
+                                    </a>
+                                {% endwith %}
+                            </td>
+                        {% endif %}
+                    </tr>
+                {% endwith %}
             </table>
             {% include 'posts/sidebar_widgets/categories_widget.html' %}
         </div>
@@ -115,4 +148,5 @@
 
 {% block domready %}
     <script src="{% static 'js/subscription.js' %}"></script>
+    <script src="{% static 'js/like.js' %}"></script>
 {% endblock %}

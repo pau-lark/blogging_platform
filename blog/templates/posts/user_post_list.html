@@ -44,13 +44,14 @@
                                     {{ post.comments_count }}
                                 </div>
                             </div>
-                            {% if mine %}
-                                <div class="d-flex">
-                                    <a class="btn btn-dark" href="{% url 'blog:post_edit' post.id %}">Изменить</a>
-                                    <a class="btn btn-dark" href="{% url 'blog:post_delete' post.id %}">Удалить</a>
-                                </div>
-                            {% endif %}
                         </div>
+                        {% if mine %}
+                            <hr>
+                            <div>
+                                <a class="btn btn-dark w-25" href="{% url 'blog:post_edit' post.id %}">Изменить</a>
+                                <a class="btn btn-dark w-25" href="{% url 'blog:post_delete' post.id %}">Удалить</a>
+                            </div>
+                        {% endif %}
                     </div>
                 </div>
             {%  empty %}

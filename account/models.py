@@ -1,6 +1,10 @@
+from .services.rating_service import UsersRating
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.urls import reverse
+
+
+RATING = UsersRating()
 
 
 class CustomUser(AbstractUser):
@@ -35,6 +39,9 @@ class CustomUser(AbstractUser):
                        args=[
                            self.username
                        ])
+
+    def get_user_rating(self):
+        return RATING.get_rating_by_id(self.id)
 
 
 class Subscription(models.Model):

@@ -2,7 +2,7 @@
     <div class="list-group d-flex justify-content-around">
         {% for status_value, status_name in filter_list.items %}
             <a href="{% url 'blog:users_post_list' request.user.username %}?filter={{ status_value }}"
-                class="link-dark list-group-item-action list-group-item-light p-2 px-4
+                class="link-dark list-group-item-action list-group-item-dark p-2 px-4
                     {% if status_value == filter %}active{% endif %}">
                         {{ status_name }}
             </a>

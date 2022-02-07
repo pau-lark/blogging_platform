@@ -179,6 +179,21 @@ USER_POST_STATUS_FILTER_LIST = {
     'publish': 'Публикации',
     'draft': 'Черновики'
 }
+USER_FILTER_LIST = {
+    'all': 'Все',
+    'subscriptions': 'Подписки',
+    'subscribers': 'Подписчики'
+}
+USER_ORDER_LIST = {
+    'rating': 'По рейтингу',
+    'post_count': 'По количеству постов'
+}
+
+POST_CONTENT_TYPES = {
+    'text': 'Текст',
+    'image': 'Изображение',
+    'video': 'Видео'
+}
 
 ALPHABET = {
     'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd', 'е': 'e', 'ё': 'yo', 'ж': 'zh', 'з': 'z', 'и': 'i',

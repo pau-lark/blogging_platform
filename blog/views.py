@@ -1,26 +1,29 @@
-from .forms import SearchForm, PostCreationForm
-from .models import Post, Category
+from .forms import SearchForm
+from .models import Post
 from .services.post_content_service import \
     get_text_preview_for_post,\
-    get_post_content
+    get_post_render_contents,\
+    get_model_by_name,\
+    get_content_object_by_model_name_and_id,\
+    create_content,\
+    delete_post_content_by_id,\
+    publish_post
+from .services.post_like_service import like_post
 from .services.posts_range_service import \
     get_filtered_and_sorted_post_list,\
     get_category_by_slug,\
-    get_post_object,\
-    get_draft_list
+    get_post_object
 from .services.view_mixins import PaginatorMixin, PostEditMixin
 from .services.post_rating_service import PostsRating, PostViewCounter
 from account.services.decorators import query_debugger
 from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.forms.models import modelform_factory
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.views.generic.base import View
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
-
-from django.contrib.contenttypes.models import ContentType
-from django.forms.models import modelform_factory
 
 
 RATING = PostsRating()
@@ -33,7 +36,7 @@ def index(request):
 
 class PostListBaseView(PaginatorMixin, View):
     """
-    Базовый view для вывода фильтрованного списка статей для
+    Базовая view для вывода фильтрованного списка статей для
     авторизованного пользователя
     и списка всех статей для неавторизованного.
     Также производится сортировка и фильтрация по категориям.
@@ -68,15 +71,15 @@ class PostListBaseView(PaginatorMixin, View):
                                                   category_slug,
                                                   self.filter_by,
                                                   self.order_by)
-        print(self.posts)
         if posts:
             for post in posts:
                 post = self.get_post_content_and_attrs(post)
-            self.posts = posts
+            self.posts = self.get_paginate_list(posts)
 
         return render(request, self.template_name, self.get_context_data())
 
-    def get_post_content_and_attrs(self, post: Post):
+    @query_debugger
+    def get_post_content_and_attrs(self, post: Post) -> Post:
         post_view_counter = PostViewCounter()
         post.preview_content = get_text_preview_for_post(post)
         post.rating = RATING.get_rating_by_id(post.id)
@@ -85,9 +88,9 @@ class PostListBaseView(PaginatorMixin, View):
         post.comments_count = 0
         return post
 
-    def get_context_data(self):
+    def get_context_data(self) -> dict:
         context = {
-            'posts': self.get_paginate_list(self.posts),
+            'posts': self.posts,
             'category': self.category,
             'username': self.username,
             'filter': self.filter_by,
@@ -102,7 +105,7 @@ class PostListView(PostListBaseView):
     View для отображения главной страницы с постами
     Если пользователь не авторизован, ему недоступны фильтры
     """
-    def get_context_data(self):
+    def get_context_data(self) -> dict:
         context = super().get_context_data()
         context['order_list'] = settings.POST_ORDER_LIST
         if self.request.user.is_authenticated:
@@ -110,7 +113,7 @@ class PostListView(PostListBaseView):
         return context
 
 
-class UserPostListView(PostListBaseView):
+class UserPostListView(LoginRequiredMixin, PostListBaseView):
     """
     View для вывода списка статей выбранного пользователя.
     Для собственный постов возможна фильтрация по статусу,
@@ -122,11 +125,14 @@ class UserPostListView(PostListBaseView):
             username: str = None,
             category_slug: str = None) -> HttpResponse:
 
-        if username != self.request.user.username:
+        filter_by = request.GET.get('filter')
+        if username != self.request.user.username or not filter_by:
             self.filter_by = 'publish'
+        if filter_by == 'draft':
+            self.template_name = 'posts/draft_list.html'
         return super().get(request, username, category_slug)
 
-    def get_context_data(self):
+    def get_context_data(self) -> dict:
         context = super().get_context_data()
         if self.username == self.request.user.username:
             context['filter_list'] = settings.USER_POST_STATUS_FILTER_LIST
@@ -142,16 +148,21 @@ class PostDetailView(View):
     @query_debugger
     def get(self, request: HttpRequest, post_id: int) -> HttpResponse:
         post = get_post_object(post_id)
-        contents = get_post_content(post)
+        contents = get_post_render_contents(post)
         post.rating = RATING.get_rating_by_id(post.id)
         post.view_count = self.post_view_counter.get_post_view_count(post_id)
         # TODO: likes, comments, forms
 
+        author = post.author
+
         self.post_view_counter.incr_view_count(post_id)
+        RATING.incr_or_decr_rating_by_id(action='view',
+                                         object_id=post_id)
 
         context = {
             'post': post,
             'contents': contents,
+            'category': post.category,
             'section': post
         }
         return render(request, 'posts/detail.html', context)
@@ -168,7 +179,7 @@ class PostUpdateView(LoginRequiredMixin, PostEditMixin, UpdateView):
 class PostDeleteView(LoginRequiredMixin, DeleteView):
     model = Post
     pk_url_kwarg = 'post_id'
-    success_url = reverse_lazy('blog:draft_list')
+    success_url = None
     template_name = 'posts/edit/delete_form.html'
 
     def delete(self, request, *args, **kwargs):
@@ -177,15 +188,89 @@ class PostDeleteView(LoginRequiredMixin, DeleteView):
             content.content_object.delete()
         return super().delete(request, *args, **kwargs)
 
+    def get_success_url(self):
+        self.success_url = reverse_lazy(
+            'blog:users_post_list',
+            kwargs={'username': self.request.user.username}
+        )
+        return super().get_success_url()
+
 
 class PostPreviewEditView(LoginRequiredMixin, View):
     @query_debugger
     def get(self, request: HttpRequest, post_id: int) -> HttpResponse:
         post = get_post_object(post_id)
-        contents = get_post_content(post)
+        contents = get_post_render_contents(post)
 
         context = {
             'post': post,
-            'contents': contents
+            'contents': contents,
+            'content_types': settings.POST_CONTENT_TYPES
         }
         return render(request, 'posts/edit/preview.html', context)
+
+
+class ContentCreateUpdateView(LoginRequiredMixin, View):
+    model = None
+    content_object = None
+    template_name = 'posts/content/form.html'
+
+    def get_form(self, **kwargs):
+        form = modelform_factory(self.model, exclude=[])
+        return form(**kwargs)
+
+    def dispatch(self, request, **kwargs):
+        model_name = kwargs.get('model_name')
+        if model_name:
+            self.model = get_model_by_name(model_name)
+            content_object_id = kwargs.get('content_object_id')
+            if content_object_id:
+                self.content_object = get_content_object_by_model_name_and_id(model_name,
+                                                                              content_object_id)
+        return super().dispatch(request, **kwargs)
+
+    def get(self, request: HttpRequest, **kwargs) -> HttpResponse:
+        form = self.get_form(instance=self.content_object)
+        context = {
+            'form': form,
+            'content': self.content_object
+        }
+        return render(request, self.template_name, context)
+
+    def post(self, request: HttpRequest, **kwargs) -> HttpResponse:
+        post_id = kwargs.get('post_id')
+        form = self.get_form(instance=self.content_object,
+                             data=request.POST,
+                             files=request.FILES)
+        if form.is_valid():
+            content_object = form.save()
+            if not self.content_object:
+                create_content(post=get_post_object(post_id),
+                               content_object=content_object)
+            return redirect('blog:post_edit', post_id)
+        context = {
+            'form': form,
+            'content': self.content_object
+        }
+        return render(request, self.template_name, context)
+
+
+class ContentDeleteView(LoginRequiredMixin, View):
+    def get(self, request: HttpRequest, post_id: int, content_id: int) -> HttpResponse:
+        delete_post_content_by_id(content_id)
+        return redirect('blog:post_edit', post_id)
+
+
+def publish_post_view(request: HttpRequest, post_id: int) -> HttpResponse:
+    publish_post(post_id)
+    return redirect('blog:users_post_list', request.user.username)
+
+
+class PostLikeView(LoginRequiredMixin, View):
+    def post(self, request):
+        post_id = request.POST.get('post_id')
+        action = request.POST.get('action')
+        if post_id and action:
+            if like_post(request.user, post_id, action):
+                return JsonResponse({'status': 'ok'})
+        return JsonResponse({'status': ''})

@@ -1,4 +1,5 @@
 from .services.utils import slugify
+from account.models import CustomUser
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
@@ -55,6 +56,10 @@ class Post(models.Model):
     status = models.CharField(max_length=10,
                               choices=STATUS_CHOICES,
                               default='draft')
+    users_like = models.ManyToManyField(CustomUser,
+                                        related_name='posts_like',
+                                        verbose_name='Понравилось пользователям',
+                                        blank=True)
 
     class Meta:
         ordering = ['-published']
@@ -100,14 +105,19 @@ class Content(models.Model):
         return f'{self.post.title} - {self._meta.model_name}'
 
 
-class Text(models.Model):
+class ModelNameMixin:
+    def get_model_name(self):
+        return self._meta.model_name
+
+
+class Text(ModelNameMixin, models.Model):
     text = models.TextField(verbose_name='Текст')
 
 
-class Image(models.Model):
+class Image(ModelNameMixin, models.Model):
     image = models.ImageField(upload_to='posts/%Y/%m/%d',
                               verbose_name='Изображение')
 
 
-class Video(models.Model):
+class Video(ModelNameMixin, models.Model):
     url = models.URLField(verbose_name='URL видео')

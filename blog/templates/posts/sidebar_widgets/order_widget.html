@@ -6,7 +6,7 @@
                {% else %}
                     href="{% url 'blog:post_list' %}?filter={{ filter }}&order={{ order_value }}"
                {% endif %}
-               class="link-dark list-group-item-action list-group-item-light p-2 px-4
+               class="link-dark list-group-item-action list-group-item-dark p-2 px-4
                     {% if order == order_value %}active{% endif %}">
                         {{ order_name}}
             </a>

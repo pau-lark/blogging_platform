@@ -7,6 +7,10 @@
 {% block content %}
     <div class="row w-75 mx-auto my-3">
         <div class="col-lg-8">
+            <h2 class="pb-3">
+                <span class="text-muted">Черновики пользователя</span>
+                <a class="link-dark" href="{% url 'user_profile' username %}">{{ username }}</a>
+            </h2>
             {% for post in posts %}
                 <div class="card mb-4">
                     {% if post.preview_image %}
@@ -21,9 +25,9 @@
                         <h2 class="card-title">{{ post.title }}</h2>
                         <p class="card-text">{{ post.preview_content|truncatewords:40 }}</p>
                         <hr>
-                        <div class="d-flex">
-                            <a class="btn btn-dark" href="{% url 'blog:post_edit' post.id %}">Изменить</a>
-                            <a class="btn btn-dark" href="{% url 'blog:post_delete' post.id %}">Удалить</a>
+                        <div>
+                            <a class="btn btn-dark w-25" href="{% url 'blog:post_edit' post.id %}">Изменить</a>
+                            <a class="btn btn-dark w-25" href="{% url 'blog:post_delete' post.id %}">Удалить</a>
                         </div>
                     </div>
                 </div>

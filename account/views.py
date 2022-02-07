@@ -8,6 +8,7 @@ from .services.users_range_service import \
 from .services.rating_service import UsersRating
 from .services.decorators import query_debugger
 from blog.services.view_mixins import PaginatorMixin
+from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
@@ -90,8 +91,9 @@ class UserListView(LoginRequiredMixin, PaginatorMixin, View):
             username = request.user.username
 
         users = get_filtered_and_sorted_user_list(username, filter_by, order_by)
-        for user in users:
-            user.rating = RATING.get_rating_by_id(user.id)
+        # if users:
+        #     for user in users:
+        #         user.rating = RATING.get_rating_by_id(user.id)
         request.user.subscription_list = get_user_subscriptions(request.user)
 
         context = {
@@ -99,7 +101,9 @@ class UserListView(LoginRequiredMixin, PaginatorMixin, View):
             'section': 'author',
             'username': username,
             'filter': filter_by,
-            'order': order_by
+            'order': order_by,
+            'filter_list': settings.USER_FILTER_LIST,
+            'order_list': settings.USER_ORDER_LIST
         }
         return render(request, 'users/list.html', context)
 

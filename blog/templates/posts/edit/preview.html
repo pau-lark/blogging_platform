@@ -29,30 +29,37 @@
         </div>
         <hr class="my-5">
                 <!-- Post content-->
-        {% for content in contents %}
+        {% for content_object_response, content in contents %}
             <div class="mb-5 d-flex">
                 <div class="col-8">
                     <p class="fs-5 mb-4">
-                        {{ content }}
+                        {{ content_object_response }}
                     </p>
                 </div>
                 <div class="col-4 px-5">
-                    <a href="#" class="btn btn-outline-dark w-75 my-2">Изменить</a>
-                    <a href="#" class="btn btn-outline-dark w-75">Удалить</a>
+                    <a href="{% url 'blog:content_update' post.id content.content_object.get_model_name content.content_object.id %}"
+                       class="btn btn-outline-dark w-75 my-2">Изменить</a>
+                    <a href="{% url 'blog:content_delete' post.id content.id %}"
+                       class="btn btn-outline-dark w-75">Удалить</a>
                 </div>
             </div>
             <hr>
         {% endfor %}
         <div class="mb-5">
             <h3 class="my-3">Добавить контент</h3>
-            <a href="#" class="btn btn-outline-dark w-25">Текст</a>
-            <a href="#" class="btn btn-outline-dark w-25">Картинка</a>
-            <a href="#" class="btn btn-outline-dark w-25">Видео</a>
+            {% for content_type_value, content_type_name in content_types.items %}
+                <a href="{% url 'blog:content_create' post.id content_type_value %}"
+                   class="btn btn-outline-dark w-25">
+                    {{ content_type_name }}
+                </a>
+            {% endfor %}
         </div>
         <hr class="my-5">
         <div class="mb-5">
-            <a href="#" class="btn btn-dark w-25">Опубликовать</a>
-            <a href="#" class="btn btn-outline-dark w-25">Сохранить</a>
+            {% if post.status == 'draft' %}
+                <a href="{% url 'blog:post_publish' post.id %}" class="btn btn-dark w-25">Опубликовать</a>
+            {% endif %}
+            <a href="{% url 'blog:users_post_list' request.user.username %}" class="btn btn-outline-dark w-25">Сохранить</a>
         </div>
     </div>
 {% endblock %}
