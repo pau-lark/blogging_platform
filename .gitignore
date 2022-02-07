@@ -8,3 +8,6 @@ __pycache__/
 media/*
 
 db.sqlite3
+
+!*logs/.gitkeep
+logs/*

@@ -37,7 +37,7 @@ class RegisterView(TemplateResponseMixin, View):
             new_user = form.save(commit=False)
             new_user.set_password(form.cleaned_data['password'])
             new_user.save()
-            RATING.incr_or_decr_rating_by_id(action='registration',
+            RATING.incr_or_decr_rating_by_id(action='init',
                                              object_id=new_user.id)
             return redirect('profile')
         context = {
