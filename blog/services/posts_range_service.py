@@ -38,8 +38,8 @@ def get_post_list_by_category(category_slug: str) -> QuerySet[Post]:
     """
     # TODO: добавить prefetch_related с комментами(наверное)
     if category_slug:
-        return Post.published_manager.filter(category__slug=category_slug)
-    return Post.published_manager.all()
+        return Post.published_manager.prefetch_related('users_like', 'comments').filter(category__slug=category_slug)
+    return Post.published_manager.prefetch_related('users_like', 'comments').all()
 
 
 @query_debugger
@@ -113,7 +113,6 @@ def get_filtered_and_sorted_post_list(
         order_by: str = 'rating') -> QuerySet[Post]:
     """Вызывает функции фильтрации и сортировки постов"""
     posts = _get_filtered_post_list(username, category_slug, filter_by)
-    print(posts)
     return _get_sorted_post_list(posts, order_by)
 
 

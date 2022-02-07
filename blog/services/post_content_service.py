@@ -43,10 +43,11 @@ def get_post_render_contents(post: Post) -> list[tuple]:
     contents = []
     for content in post.contents.prefetch_related('content_object').all():
         content_object = content.content_object
-        model_name = content_object.get_model_name()
-        content_template_response = render_to_string(f'posts/content/{model_name}.html',
-                                                     {'content_object': content_object})
-        contents.append((content_template_response, content))
+        if content_object:
+            model_name = content_object.get_model_name()
+            content_template_response = render_to_string(f'posts/content/{model_name}.html',
+                                                         {'content_object': content_object})
+            contents.append((content_template_response, content))
     return contents
 
 
@@ -79,6 +80,15 @@ def get_content_object_by_model_name_and_id(
 
 def create_content(post: Post, content_object: Union[Text, Image, Video]) -> None:
     Content.objects.create(post=post, content_object=content_object)
+
+
+def delete_all_post_content(post_id: int) -> None:
+    post = get_post_object(post_id)
+    for content in post.contents.all():
+        content.content_object.delete()
+    RATING.incr_or_decr_rating_by_id(action='delete_post',
+                                     object_id=post.author.id)
+    RATING.clear_rating_by_id(object_id=post_id)
 
 
 def publish_post(post_id: int) -> None:

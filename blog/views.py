@@ -1,5 +1,5 @@
 from .forms import SearchForm
-from .models import Post
+from .models import Post, Comment
 from .services.post_content_service import \
     get_text_preview_for_post,\
     get_post_render_contents,\
@@ -7,14 +7,14 @@ from .services.post_content_service import \
     get_content_object_by_model_name_and_id,\
     create_content,\
     delete_post_content_by_id,\
-    publish_post
+    publish_post,\
+    delete_all_post_content
 from .services.post_like_service import like_post
 from .services.posts_range_service import \
     get_filtered_and_sorted_post_list,\
     get_category_by_slug,\
     get_post_object
-from .services.view_mixins import PaginatorMixin, PostEditMixin
-from .services.post_rating_service import PostsRating, PostViewCounter
+from .services.view_mixins import PaginatorMixin, PostEditMixin, PostAttrsMixin
 from account.services.decorators import query_debugger
 from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -26,15 +26,12 @@ from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 
 
-RATING = PostsRating()
-
-
 def index(request):
     form = SearchForm()
     return render(request, 'base.html', {'search_form': form})
 
 
-class PostListBaseView(PaginatorMixin, View):
+class PostListBaseView(PaginatorMixin, PostAttrsMixin, View):
     """
     Базовая view для вывода фильтрованного списка статей для
     авторизованного пользователя
@@ -79,14 +76,9 @@ class PostListBaseView(PaginatorMixin, View):
         return render(request, self.template_name, self.get_context_data())
 
     @query_debugger
-    def get_post_content_and_attrs(self, post: Post) -> Post:
-        post_view_counter = PostViewCounter()
-        post.preview_content = get_text_preview_for_post(post)
-        post.rating = RATING.get_rating_by_id(post.id)
-        post.view_count = post_view_counter.get_post_view_count(post.id)
-        # TODO: comments
-        post.comments_count = 0
-        return post
+    def get_post_content_and_attrs(self, article: Post) -> Post:
+        article.preview_content = get_text_preview_for_post(article)
+        return super().get_post_content_and_attrs(article)
 
     def get_context_data(self) -> dict:
         context = {
@@ -142,30 +134,51 @@ class UserPostListView(LoginRequiredMixin, PostListBaseView):
         return context
 
 
-class PostDetailView(View):
-    post_view_counter = PostViewCounter()
+class PostDetailView(PostAttrsMixin, View):
+    template_name = 'posts/detail.html'
+    article = None
+
+    def dispatch(self, request, **kwargs):
+        self.article = get_post_object(kwargs.get('post_id'))
+        self.article = self.get_post_content_and_attrs(self.article)
+        return super().dispatch(request, **kwargs)
 
     @query_debugger
     def get(self, request: HttpRequest, post_id: int) -> HttpResponse:
-        post = get_post_object(post_id)
-        contents = get_post_render_contents(post)
-        post.rating = RATING.get_rating_by_id(post.id)
-        post.view_count = self.post_view_counter.get_post_view_count(post_id)
-        # TODO: likes, comments, forms
+        self.change_post_views(post_id)
+        form = self.get_comment_form()
+        return render(request, self.template_name, self.get_context_data(form))
 
-        author = post.author
+    def post(self, request: HttpRequest, post_id: int) -> HttpResponse:
+        form = self.get_comment_form(data=request.POST,
+                                     files=request.FILES)
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.post = self.article
+            comment.author = request.user
+            comment.save()
+            self.rating.incr_or_decr_rating_by_id(action='comment',
+                                                  object_id=post_id)
+            form = self.get_comment_form()
+        return render(request, self.template_name, self.get_context_data(form))
 
-        self.post_view_counter.incr_view_count(post_id)
-        RATING.incr_or_decr_rating_by_id(action='view',
-                                         object_id=post_id)
+    def get_post_content_and_attrs(self, article: Post) -> Post:
+        article.content_list = get_post_render_contents(article)
+        return super().get_post_content_and_attrs(article)
 
+    @staticmethod
+    def get_comment_form(**kwargs):
+        form = modelform_factory(Comment, fields=['body'])
+        return form(**kwargs)
+
+    def get_context_data(self, form):
         context = {
-            'post': post,
-            'contents': contents,
-            'category': post.category,
-            'section': post
+            'post': self.article,
+            'category': self.article.category,
+            'form': form,
+            'section': 'post'
         }
-        return render(request, 'posts/detail.html', context)
+        return context
 
 
 class PostCreateView(LoginRequiredMixin, PostEditMixin, CreateView):
@@ -183,9 +196,7 @@ class PostDeleteView(LoginRequiredMixin, DeleteView):
     template_name = 'posts/edit/delete_form.html'
 
     def delete(self, request, *args, **kwargs):
-        post = self.get_object()
-        for content in post.contents.all():
-            content.content_object.delete()
+        delete_all_post_content(kwargs.get('post_id'))
         return super().delete(request, *args, **kwargs)
 
     def get_success_url(self):

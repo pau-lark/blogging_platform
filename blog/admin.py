@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Category, Post, Content, Text, Image, Video
+from .models import Category, Post, Content, Text, Image, Video, Comment
 
 
 @admin.register(Category)
@@ -34,3 +34,8 @@ class ImageAdmin(admin.ModelAdmin):
 @admin.register(Video)
 class VideoAdmin(admin.ModelAdmin):
     list_display = ['id', 'url']
+
+
+@admin.register(Comment)
+class CommentAdmin(admin.ModelAdmin):
+    list_display = ['post', 'author', 'created', 'active']

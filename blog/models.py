@@ -113,11 +113,43 @@ class ModelNameMixin:
 class Text(ModelNameMixin, models.Model):
     text = models.TextField(verbose_name='Текст')
 
+    class Meta:
+        verbose_name = 'Текст поста'
+        verbose_name_plural = 'Тексты поста'
+
 
 class Image(ModelNameMixin, models.Model):
     image = models.ImageField(upload_to='posts/%Y/%m/%d',
                               verbose_name='Изображение')
 
+    class Meta:
+        verbose_name = 'Картинка поста'
+        verbose_name_plural = 'Картинки поста'
+
 
 class Video(ModelNameMixin, models.Model):
     url = models.URLField(verbose_name='URL видео')
+
+    class Meta:
+        verbose_name = 'Видео поста'
+        verbose_name_plural = 'Видео поста'
+
+
+class Comment(models.Model):
+    post = models.ForeignKey(Post, on_delete=models.CASCADE,
+                             related_name='comments',
+                             verbose_name='Пост')
+    author = models.ForeignKey(CustomUser, on_delete=models.CASCADE,
+                               related_name='comments',
+                               verbose_name='Автор комментария')
+    body = models.TextField(verbose_name='Текст комментария')
+    created = models.DateTimeField(auto_now_add=True)
+    active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ('-created',)
+        verbose_name = 'Комментарий'
+        verbose_name_plural = 'Комментарии'
+
+    def __str__(self):
+        return f'Comment by {self.author}'

@@ -28,19 +28,25 @@
                             <a class="btn btn-dark" href="{{ post.get_absolute_url }}">Читать далее</a>
                             <div class="mx-5 d-flex">
                                 <div class="px-2">
-                                    <img src="{% static 'assets/rating.png' %}" alt="">
+                                    <img src="{% static 'assets/rating.svg' %}" alt="">
                                     {{ post.rating }}
                                 </div>
                                 <div class="px-2">
-                                    <img src="{% static 'assets/view.png' %}" alt="">
+                                    <img src="{% static 'assets/view.svg' %}" alt="">
                                     {{ post.view_count }}
                                 </div>
+                            <!-- like -->
                                 <div class="px-2">
-                                    <img src="{% static 'assets/like.png' %}" alt="">
-                                    0
+                                    {% if request.user in post.users_like.all %}
+                                        <img src="{% static 'assets/unlike.svg' %}" alt="">
+                                    {% else %}
+                                        <img src="{% static 'assets/like.svg' %}" alt="">
+                                    {% endif %}
+                                    {{ post.users_like.count }}
                                 </div>
+                            <!-- comment -->
                                 <div class="px-2">
-                                    <img src="{% static 'assets/comment.png' %}" alt="">
+                                    <img src="{% static 'assets/comment.svg' %}" alt="">
                                     {{ post.comments_count }}
                                 </div>
                             </div>
