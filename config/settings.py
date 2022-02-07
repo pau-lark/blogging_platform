@@ -196,9 +196,57 @@ POST_CONTENT_TYPES = {
 }
 
 ALPHABET = {
-    'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd', 'е': 'e', 'ё': 'yo', 'ж': 'zh', 'з': 'z', 'и': 'i',
-    'й': 'j', 'к': 'k', 'л': 'l', 'м': 'm', 'н': 'n', 'о': 'o', 'п': 'p', 'р': 'r', 'с': 's', 'т': 't',
-    'у': 'u', 'ф': 'f', 'х': 'kh', 'ц': 'ts', 'ч': 'ch', 'ш': 'sh', 'щ': 'shch', 'ы': 'i', 'э': 'e',
-    'ю': 'yu',
-    'я': 'ya'
+    'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd', 'е': 'e', 'ё': 'yo', 'ж': 'zh',
+    'з': 'z', 'и': 'i', 'й': 'j', 'к': 'k', 'л': 'l', 'м': 'm', 'н': 'n', 'о': 'o',
+    'п': 'p', 'р': 'r', 'с': 's', 'т': 't', 'у': 'u', 'ф': 'f', 'х': 'kh', 'ц': 'ts',
+    'ч': 'ch', 'ш': 'sh', 'щ': 'shch', 'ы': 'i', 'э': 'e', 'ю': 'yu', 'я': 'ya'
+}
+
+
+LOG_DIR = BASE_DIR.joinpath('logs')
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'console_formatter': {
+            'format': '{levelname} {module} {message}',
+            'style': '{',
+        },
+        'file_formatter': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'console_formatter',
+        },
+        'account_file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': f'{LOG_DIR}/account.log',
+            'formatter': 'file_formatter',
+        },
+        'blog_file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': f'{LOG_DIR}/blog.log',
+            'formatter': 'file_formatter',
+        },
+    },
+    'loggers': {
+        'account_logger': {
+            'handlers': ['console', 'account_file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'blog_logger': {
+            'handlers': ['console', 'blog_file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
 }

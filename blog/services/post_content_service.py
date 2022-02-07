@@ -7,9 +7,13 @@ from django.contrib.contenttypes.models import ContentType
 from django.http import Http404
 from django.template.loader import render_to_string
 from typing import Union
+import logging.config
 
 
 RATING = UsersRating()
+
+logging.config.dictConfig(settings.LOGGING)
+LOGGER = logging.getLogger('blog_logger')
 
 
 def get_text_preview_for_post(post: Post) -> str:
@@ -18,7 +22,7 @@ def get_text_preview_for_post(post: Post) -> str:
     try:
         return preview_content.content_object.text
     except AttributeError:
-        # TODO: лог
+        LOGGER.error(f'post {post.id}, content {preview_content.id}, text not found')
         return ''
 
 
@@ -27,7 +31,7 @@ def delete_post_content_by_id(content_id: int) -> None:
     try:
         content = Content.objects.get(id=content_id)
     except Content.DoesNotExist:
-        # TODO: и пишем в лог
+        LOGGER.error(f'content {content_id} not found')
         raise Http404(f'Контент {content_id} не найден')
     content.content_object.delete()
     content.delete()
@@ -58,9 +62,9 @@ def get_model_by_name(model_name: str) -> Union[Text, Image, Video, None]:
             return ContentType.objects.get(app_label='blog',
                                            model=model_name).model_class()
         except ContentType.DoesNotExist:
-            # TODO: в лог
+            LOGGER.error(f'model {model_name} not found')
             return None
-    # TODO: в лог (unknown model_name)
+    LOGGER.error(f'unknown model {model_name}')
     return None
 
 
@@ -73,16 +77,20 @@ def get_content_object_by_model_name_and_id(
         try:
             return model.objects.get(id=content_object_id)
         except model.DoesNotExist:
-            # TODO: и пишем в лог
+            LOGGER.error(f'{model_name} {content_object_id} not found')
             raise Http404(f'Контент {content_object_id} не найден')
-    raise Http404(f'Контент {content_object_id} не найден')
+    raise Http404(f'Контент {content_object_id} не найден: unknown model {model_name}')
 
 
 def create_content(post: Post, content_object: Union[Text, Image, Video]) -> None:
-    Content.objects.create(post=post, content_object=content_object)
+    try:
+        Content.objects.create(post=post, content_object=content_object)
+    except Exception as e:
+        LOGGER.warning(f'create content error', e)
 
 
 def delete_all_post_content(post_id: int) -> None:
+    """Удаляет содержимое статьи и чистит её рейтинг"""
     post = get_post_object(post_id)
     for content in post.contents.all():
         content.content_object.delete()
@@ -92,6 +100,7 @@ def delete_all_post_content(post_id: int) -> None:
 
 
 def publish_post(post_id: int) -> None:
+    """Меняет статус статьи на "опубликовано", добавляет рейтинг пользователю"""
     post = get_post_object(post_id)
     post.status = 'published'
     post.save()

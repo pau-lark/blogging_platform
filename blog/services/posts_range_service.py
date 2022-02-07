@@ -1,31 +1,24 @@
-from ..models import Post, Category
+from ..models import Post
 from .post_rating_service import PostsRating
 from account.services.decorators import query_debugger
 from account.services.users_range_service import get_filtered_user_list
+from django.conf import settings
 from django.db.models.query import QuerySet
 from django.http import Http404
-from django.shortcuts import get_object_or_404
+import logging.config
 
 
-@query_debugger
-def get_category_by_slug(category_slug: str) -> Category:
-    """Получаем категорию по слагу"""
-    try:
-        category = get_object_or_404(Category,
-                                     slug=category_slug)
-        return category
-    except Category.DoesNotExist:
-        # TODO: и пишем в лог
-        raise Http404(f'Категория {category_slug} не найдена')
+logging.config.dictConfig(settings.LOGGING)
+LOGGER = logging.getLogger('blog_logger')
 
 
 @query_debugger
 def get_post_object(post_id: int) -> Post:
     """Получаем пост по id"""
     try:
-        post = get_object_or_404(Post, id=post_id)
+        post = Post.objects.get(id=post_id)
     except Post.DoesNotExist:
-        # TODO: и пишем в лог
+        LOGGER.error(f'post {post_id} not found')
         raise Http404(f'Пост {post_id} не найден')
     return post
 
@@ -36,9 +29,9 @@ def get_post_list_by_category(category_slug: str) -> QuerySet[Post]:
     Возвращает qs постов по категории.
     Если категория не задана, возвращает все посты
     """
-    # TODO: добавить prefetch_related с комментами(наверное)
     if category_slug:
-        return Post.published_manager.prefetch_related('users_like', 'comments').filter(category__slug=category_slug)
+        return Post.published_manager.prefetch_related('users_like', 'comments')\
+            .filter(category__slug=category_slug)
     return Post.published_manager.prefetch_related('users_like', 'comments').all()
 
 
@@ -53,8 +46,6 @@ def _get_filtered_post_list(username: str, category_slug: str, filter_by: str) -
         'draft' - свои черновики.
     """
     posts = get_post_list_by_category(category_slug)
-    print(posts)
-    print(filter_by)
     if username:
         if filter_by == 'subscriptions':
             subscription_user_list = get_filtered_user_list(username, filter_by)
@@ -75,14 +66,12 @@ def _get_order_by_rating(post_list: QuerySet[Post]) -> list:
     posts_sorted_by_rating_ids = [
         int(post_id) for post_id in rating.get_range_list_by_rating()
     ]
-    print(posts_sorted_by_rating_ids)
     try:
         post_list.sort(
             key=lambda post: posts_sorted_by_rating_ids.index(post.id)
         )
-    except ValueError as e:
-        # в лог
-        pass
+    except ValueError:
+        LOGGER.error(f'Rating sort error of post list {post_list}. Some posts have not rating')
     return post_list
 
 
@@ -99,7 +88,6 @@ def _get_sorted_post_list(post_list: QuerySet[Post], order_by: str):
         'rating' - сортировать по рейтингу;
         'date' - сортировать по date.
     """
-    print(post_list)
     if order_by == 'rating':
         return _get_order_by_rating(post_list)
     # во всех остальных случаях - по дате
@@ -114,7 +102,3 @@ def get_filtered_and_sorted_post_list(
     """Вызывает функции фильтрации и сортировки постов"""
     posts = _get_filtered_post_list(username, category_slug, filter_by)
     return _get_sorted_post_list(posts, order_by)
-
-
-def get_draft_list(user) -> QuerySet[Post]:
-    return user.posts.filter(status='draft')

@@ -12,7 +12,6 @@ from .services.post_content_service import \
 from .services.post_like_service import like_post
 from .services.posts_range_service import \
     get_filtered_and_sorted_post_list,\
-    get_category_by_slug,\
     get_post_object
 from .services.view_mixins import PaginatorMixin, PostEditMixin, PostAttrsMixin
 from account.services.decorators import query_debugger
@@ -62,7 +61,7 @@ class PostListBaseView(PaginatorMixin, PostAttrsMixin, View):
         else:
             self.username = username
         if category_slug:
-            self.category = get_category_by_slug(category_slug)
+            self.category = self.get_category_by_slug(category_slug)
 
         posts = get_filtered_and_sorted_post_list(self.username,
                                                   category_slug,
