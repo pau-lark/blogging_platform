@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Category, Post, Content, Text, Image, Video, Comment
+from .models import Category, Article, Content, Text, Image, Video, Comment
 
 
 @admin.register(Category)
@@ -12,8 +12,8 @@ class ContentInline(admin.StackedInline):
     extra = 1
 
 
-@admin.register(Post)
-class PostAdmin(admin.ModelAdmin):
+@admin.register(Article)
+class ArticleAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug': ('title',)}
     inlines = [ContentInline]
 
@@ -38,4 +38,4 @@ class VideoAdmin(admin.ModelAdmin):
 
 @admin.register(Comment)
 class CommentAdmin(admin.ModelAdmin):
-    list_display = ['post', 'author', 'created', 'active']
+    list_display = ['article', 'author', 'created', 'active']

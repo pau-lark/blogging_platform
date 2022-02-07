@@ -3,30 +3,30 @@
 {% load thumbnail %}
 {% load static %}
 
-{% block title %}{{ post.title }}{% endblock %}
+{% block title %}{{ article.title }}{% endblock %}
 
 {% block content %}
     <div class="row w-75 mx-auto my-3">
         <div class="col-lg-8">
             <article>
-                <!-- Post header-->
+                <!-- Article header-->
                 <header class="mb-4">
-                    <!-- Post title-->
-                    <h1 class="fw-bolder mb-1">{{ post.title }}</h1>
-                    <!-- Post meta content-->
-                    <div class="text-muted fst-italic mb-2">{{ post.created }}</div>
+                    <!-- Article title-->
+                    <h1 class="fw-bolder mb-1">{{ article.title }}</h1>
+                    <!-- Article meta content-->
+                    <div class="text-muted fst-italic mb-2">{{ article.created }}</div>
                 </header>
                 <!-- Preview image figure-->
                 <figure class="mb-4">
-                    {% if post.preview_image %}
-                        <img class="img-fluid rounded" src="{{ post.preview_image.url }}" alt=""/>
+                    {% if article.preview_image %}
+                        <img class="img-fluid rounded" src="{{ article.preview_image.url }}" alt=""/>
                     {% else %}
                         <img class="img-fluid rounded" src="https://dummyimage.com/900x400/ced4da/6c757d.jpg" alt="..." />
                     {% endif %}
                 </figure>
-                <!-- Post content-->
+                <!-- Article content-->
                 <section class="mb-5">
-                    {% for content_response, content_object in post.content_list %}
+                    {% for content_response, content_object in article.content_list %}
                         <p class="fs-5 mb-4">
                             {{ content_response }}
                         </p>
@@ -36,26 +36,26 @@
                 <div class="m-3 d-flex justify-content-around">
                     <div class="px-2">
                         <img src="{% static 'assets/rating.svg' %}" alt="">
-                        {{ post.rating }}
+                        {{ article.rating }}
                     </div>
                     <div class="px-2">
                         <img src="{% static 'assets/view.svg' %}" alt="">
-                        {{ post.view_count }}
+                        {{ article.view_count }}
                     </div>
                     <div class="px-2">
-                        {% if request.user in post.users_like.all %}
-                            <a href="#" data-post_id="{{ post.id }}"
+                        {% if request.user in article.users_like.all %}
+                            <a href="#" data-article_id="{{ article.id }}"
                                data-action="unlike" class="like link-dark">
                                 <img class="img-like" src="{% static 'assets/unlike.svg' %}" alt="">
                             </a>
                         {% else %}
-                            <a href="#" data-post_id="{{ post.id }}"
+                            <a href="#" data-article_id="{{ article.id }}"
                                data-action="like" class="like link-dark">
                                 <img class="img-like" src="{% static 'assets/like.svg' %}" alt="">
                             </a>
                         {% endif %}
                         <span id="like-count">
-                            {{ post.users_like.count }}
+                            {{ article.users_like.count }}
                         </span>
                     </div>
                 </div>
@@ -63,16 +63,16 @@
             <!-- Comments section-->
             <section class="mb-5">
                 <div class="card bg-light">
-                    <h3 class="m-2">Комментарии ({{ post.comments_count }}):</h3>
+                    <h3 class="m-2">Комментарии ({{ article.comments_count }}):</h3>
                     <div class="card-body">
                         <!-- Comment form-->
-                        <form class="mb-4" method="post" action=".">
+                        <form class="mb-4" method="article" action=".">
                             {% csrf_token %}
                             {{ form.body|as_crispy_field }}
                             <input class="btn btn-outline-dark mt-2" type="submit" value="Отправить">
                         </form>
                         <!-- Comment-->
-                        {% for comment in post.comments.all %}
+                        {% for comment in article.comments.all %}
                         <div class="d-flex mb-4">
                             <div class="flex-shrink-0">
                                 {% with photo=comment.author.photo %}
@@ -101,7 +101,7 @@
 
         <div class="col-lg-4">
             <table class="card mb-4 p-2 table">
-                {% with user=post.author %}
+                {% with user=article.author %}
                     <tr>
                         <td>Автор:</td>
                         <td>
@@ -138,7 +138,7 @@
                     </tr>
                 {% endwith %}
             </table>
-            {% include 'posts/sidebar_widgets/categories_widget.html' %}
+            {% include 'articles/sidebar_widgets/categories_widget.html' %}
         </div>
     </div>
 {% endblock %}

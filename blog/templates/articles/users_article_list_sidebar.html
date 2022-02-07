@@ -3,13 +3,13 @@
     <div class="list-group list-group-flush selected">
         <a class="list-group-item list-group-item-action list-group-item-light p-2 px-4
                     {% if not category %}active{% endif %}"
-            href="{% url 'blog:users_post_list' username %}?filter={{ filter }}&order={{ order }}">
+            href="{% url 'blog:users_article_list' username %}?filter={{ filter }}&order={{ order }}">
                 Все статьи
         </a>
         {% for category_item in categories %}
             <a class="list-group-item list-group-item-action list-group-item-light p-2 px-4
                         {% if category_item == category %}active{% endif %}"
-                href="{% url 'blog:users_post_list_by_category' username category_item.slug %}?filter={{ filter }}&order={{ order }}">
+                href="{% url 'blog:users_article_list_by_category' username category_item.slug %}?filter={{ filter }}&order={{ order }}">
                     {{ category_item.title }}
             </a>
         {% endfor %}
@@ -19,18 +19,18 @@
 <div class="card mb-4">
     <div class="list-group d-flex justify-content-around">
         <a {% if category %}
-                href="{% url 'blog:users_post_list_by_category' username category.slug %}?filter={{ filter }}&order=rating"
+                href="{% url 'blog:users_article_list_by_category' username category.slug %}?filter={{ filter }}&order=rating"
            {% else %}
-                href="{% url 'blog:users_post_list' username %}?filter={{ filter }}&order=rating"
+                href="{% url 'blog:users_article_list' username %}?filter={{ filter }}&order=rating"
            {% endif %}
            class="link-dark list-group-item-action list-group-item-light p-2 px-4
                 {% if order == 'rating' %}active{% endif %}">
                     По рейтингу
         </a>
         <a {% if category %}
-                href="{% url 'blog:users_post_list_by_category' username category.slug %}?filter={{ filter }}&order=date"
+                href="{% url 'blog:users_article_list_by_category' username category.slug %}?filter={{ filter }}&order=date"
            {% else %}
-                href="{% url 'blog:users_post_list' username %}?filter={{ filter }}&order=date"
+                href="{% url 'blog:users_article_list' username %}?filter={{ filter }}&order=date"
            {% endif %}
            class="link-dark list-group-item-action list-group-item-light p-2 px-4
                 {% if order == 'date' %}active{% endif %}">

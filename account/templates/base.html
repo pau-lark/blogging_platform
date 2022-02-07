@@ -16,15 +16,15 @@
         <!-- Responsive navbar-->
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
             <div class="container">
-                <a class="navbar-brand" href="{% url 'blog:post_list' %}?filter=all&order=rating">
+                <a class="navbar-brand" href="{% url 'blog:article_list' %}?filter=all&order=rating">
                     Next One Blog
                 </a>
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
                     <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
                         <li class="nav-item">
                             <a class="nav-link
-                                {% if section == 'post' %}active{% endif %}"
-                                    href="{% url 'blog:post_list' %}?filter=all&order=rating">
+                                {% if section == 'article' %}active{% endif %}"
+                                    href="{% url 'blog:article_list' %}?filter=all&order=rating">
                                 Статьи
                             </a>
                         </li>
@@ -38,7 +38,7 @@
                     </ul>
                 </div>
                 <div class="px-5">
-                    <form method="post">
+                    <form method="article">
                         {% csrf_token %}
                         {{ search_form|crispy }}
                     </form>
@@ -49,8 +49,8 @@
                             {{ request.user.username }}
                         </a>
                         <div class="dropdown-menu dropdown-menu-end animate slideIn" aria-labelledby="navbarDropdown">
-                            <a class="dropdown-item" href="{% url 'blog:post_create' %}">Написать статью</a>
-                            <a class="dropdown-item" href="{% url 'blog:users_post_list' request.user.username %}?filter=publish">Мои посты</a>
+                            <a class="dropdown-item" href="{% url 'blog:article_create' %}">Написать статью</a>
+                            <a class="dropdown-item" href="{% url 'blog:users_article_list' request.user.username %}?filter=publish">Мои посты</a>
                             <a class="dropdown-item" href="{% url 'profile' %}">Профиль</a>
                             <a class="dropdown-item" href="{% url 'profile_settings' %}">Настройки</a>
                             <div class="dropdown-divider"></div>

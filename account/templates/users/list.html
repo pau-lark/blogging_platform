@@ -27,7 +27,7 @@
                     <a href="{{ user.get_absolute_url }}" class="link-dark">
                         <h2 class="card-title">{{ user.username }}</h2>
                     </a>
-                    <div class="small text-muted">Постов: {{ user.posts.count }}</div>
+                    <div class="small text-muted">Постов: {{ user.articles.count }}</div>
                     <p class="card-text">Рейтинг: <strong>{{ user.get_user_rating }}</strong></p>
                 </div>
                 <div class="card-body col-3">

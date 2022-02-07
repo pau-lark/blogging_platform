@@ -14,7 +14,7 @@
                 </a>
             </div>
             <hr>
-            <form method="post" enctype="multipart/form-data">
+            <form method="article" enctype="multipart/form-data">
                 {% csrf_token %}
                 {{ form|crispy }}
                 <input type="submit" value="Сохранить" class="btn btn-dark">

@@ -2,8 +2,8 @@ $(document).ready(function(){
     let aLike = $('a.like');
     aLike.click(function(e){
         e.preventDefault();
-        $.post('/blog/like/', {
-            'post_id': aLike.data('post_id'),
+        $.article('/blog/like/', {
+            'article_id': aLike.data('article_id'),
             'action': aLike.data('action')
         },
         function(data){

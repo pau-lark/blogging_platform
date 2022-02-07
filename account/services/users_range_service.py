@@ -29,11 +29,11 @@ def get_filtered_user_list(username: str, filter_by: str) -> QuerySet[CustomUser
     """
     if filter_by == 'subscriptions':
         user = get_user_object(username)
-        return user.subscriptions.prefetch_related('posts').all()
+        return user.subscriptions.prefetch_related('articles').all()
     elif filter_by == 'subscribers':
         user = get_user_object(username)
-        return user.subscribers.prefetch_related('posts').all()
-    return CustomUser.objects.prefetch_related('posts').exclude(username=username)
+        return user.subscribers.prefetch_related('articles').all()
+    return CustomUser.objects.prefetch_related('articles').exclude(username=username)
 
 
 def _get_order_by_rating(user_list: QuerySet[CustomUser]) -> list:
@@ -53,9 +53,9 @@ def _get_order_by_rating(user_list: QuerySet[CustomUser]) -> list:
     return user_list
 
 
-def _get_order_by_post_count(user_list: QuerySet[CustomUser]) -> QuerySet[CustomUser]:
+def _get_order_by_article_count(user_list: QuerySet[CustomUser]) -> QuerySet[CustomUser]:
     """Возвращает список пользователей, отсортированный по количеству постов"""
-    return user_list.annotate(posts_count=Count('posts')).order_by('-posts_count')
+    return user_list.annotate(articles_count=Count('articles')).order_by('-articles_count')
 
 
 @query_debugger
@@ -64,12 +64,12 @@ def _get_sorted_user_list(user_list: QuerySet[CustomUser], order_by: str):
     Получаем отсортированный qs пользователей
     Значения order_by:
         'rating' - сортировать по рейтингу;
-        'post_count' - сортировать по количеству постов.
+        'article_count' - сортировать по количеству постов.
     """
     if order_by == 'rating':
         return _get_order_by_rating(user_list)
-    elif order_by == 'post_count':
-        return _get_order_by_post_count(user_list)
+    elif order_by == 'article_count':
+        return _get_order_by_article_count(user_list)
 
 
 def get_filtered_and_sorted_user_list(

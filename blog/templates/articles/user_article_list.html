@@ -11,51 +11,51 @@
                 <span class="text-muted">Посты пользователя</span>
                 <a class="link-dark" href="{% url 'user_profile' username %}">{{ username }}</a>
             </h2>
-            {% for post in posts %}
+            {% for article in articles %}
                 <div class="card mb-4">
-                    {% if post.preview_image %}
-                        {% thumbnail post.preview_image "850x500" crop="100%" as thumb_img %}
+                    {% if article.preview_image %}
+                        {% thumbnail article.preview_image "850x500" crop="100%" as thumb_img %}
                             <img class="card-img-top" src="{{ thumb_img.url }}" alt=""/>
                         {% endthumbnail %}
                     {% else %}
                         <img class="card-img-top" src="https://dummyimage.com/850x500/dee2e6/6c757d.jpg" alt="..." />
                     {% endif %}
                     <div class="card-body">
-                        <div class="small text-muted">{{ post.published }}</div>
-                        <h2 class="card-title">{{ post.title }}</h2>
-                        <p class="card-text">{{ post.preview_content|truncatewords:40 }}</p>
+                        <div class="small text-muted">{{ article.published }}</div>
+                        <h2 class="card-title">{{ article.title }}</h2>
+                        <p class="card-text">{{ article.preview_content|truncatewords:40 }}</p>
                         <div class="d-flex">
-                            <a class="btn btn-dark" href="{{ post.get_absolute_url }}">Читать далее</a>
+                            <a class="btn btn-dark" href="{{ article.get_absolute_url }}">Читать далее</a>
                             <div class="mx-5 d-flex">
                                 <div class="px-2">
                                     <img src="{% static 'assets/rating.svg' %}" alt="">
-                                    {{ post.rating }}
+                                    {{ article.rating }}
                                 </div>
                                 <div class="px-2">
                                     <img src="{% static 'assets/view.svg' %}" alt="">
-                                    {{ post.view_count }}
+                                    {{ article.view_count }}
                                 </div>
                             <!-- like -->
                                 <div class="px-2">
-                                    {% if request.user in post.users_like.all %}
+                                    {% if request.user in article.users_like.all %}
                                         <img src="{% static 'assets/unlike.svg' %}" alt="">
                                     {% else %}
                                         <img src="{% static 'assets/like.svg' %}" alt="">
                                     {% endif %}
-                                    {{ post.users_like.count }}
+                                    {{ article.users_like.count }}
                                 </div>
                             <!-- comment -->
                                 <div class="px-2">
                                     <img src="{% static 'assets/comment.svg' %}" alt="">
-                                    {{ post.comments_count }}
+                                    {{ article.comments_count }}
                                 </div>
                             </div>
                         </div>
                         {% if mine %}
                             <hr>
                             <div>
-                                <a class="btn btn-dark w-25" href="{% url 'blog:post_edit' post.id %}">Изменить</a>
-                                <a class="btn btn-dark w-25" href="{% url 'blog:post_delete' post.id %}">Удалить</a>
+                                <a class="btn btn-dark w-25" href="{% url 'blog:article_edit' article.id %}">Изменить</a>
+                                <a class="btn btn-dark w-25" href="{% url 'blog:article_delete' article.id %}">Удалить</a>
                             </div>
                         {% endif %}
                     </div>
@@ -64,11 +64,11 @@
                 <h2>Не найдено ни одного поста</h2>
             {% endfor %}
             <!-- Pagination-->
-            {% if posts.has_other_pages %}
+            {% if articles.has_other_pages %}
                 <nav aria-label="Pagination">
                     <ul class="pagination justify-content-center my-4">
-                        {% for i in posts.paginator.page_range %}
-                            {% if posts.number == i %}
+                        {% for i in articles.paginator.page_range %}
+                            {% if articles.number == i %}
                                 <li class="page-item active" aria-current="page">
                                     <a class="page-link" href="?page={{ i }}">{{ i }}</a>
                                 </li>
@@ -82,12 +82,12 @@
         </div>
 
         <div class="col-lg-4 px-4">
-            {% include 'posts/sidebar_widgets/user_categories_widget.html' %}
+            {% include 'articles/sidebar_widgets/user_categories_widget.html' %}
             {% if filter_list %}
-                {% include 'posts/sidebar_widgets/post_status_widget.html' %}
+                {% include 'articles/sidebar_widgets/article_status_widget.html' %}
             {% endif %}
             {% if order_list %}
-                {% include 'posts/sidebar_widgets/user_order_widget.html' %}
+                {% include 'articles/sidebar_widgets/user_order_widget.html' %}
             {% endif %}
         </div>
     </div>

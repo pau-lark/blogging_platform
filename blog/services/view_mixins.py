@@ -1,6 +1,6 @@
-from ..forms import PostCreationForm
-from ..models import Post, Category
-from .post_rating_service import PostsRating, PostViewCounter
+from ..forms import ArticleCreationForm
+from ..models import Article, Category
+from .article_rating_service import ArticlesRating, ArticleViewCounter
 from account.services.decorators import query_debugger
 from django.conf import settings
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -29,27 +29,27 @@ class PaginatorMixin:
         return object_list
 
 
-class PostAttrsMixin:
+class ArticleAttrsMixin:
     """
     Миксин для получения рейтинга, категории,
     количества просмотров, лайков и комментариев статьи
     """
-    post_view_counter = PostViewCounter()
-    rating = PostsRating()
+    article_view_counter = ArticleViewCounter()
+    rating = ArticlesRating()
 
     @query_debugger
-    def get_post_content_and_attrs(self, article: Post) -> Post:
+    def get_article_content_and_attrs(self, article: Article) -> Article:
         article.rating = self.rating.get_rating_by_id(article.id)
-        article.view_count = self.post_view_counter.get_post_view_count(article.id)
+        article.view_count = self.article_view_counter.get_article_view_count(article.id)
         article.users_like_count = article.users_like.count()
         article.comments_count = article.comments.count()
         return article
 
-    def change_post_views(self, post_id: int) -> None:
+    def change_article_views(self, article_id: int) -> None:
         """Увеличивает количество просмотров и рейтинг статьи на 1"""
-        self.post_view_counter.incr_view_count(post_id)
+        self.article_view_counter.incr_view_count(article_id)
         self.rating.incr_or_decr_rating_by_id(action='view',
-                                              object_id=post_id)
+                                              object_id=article_id)
 
     def get_category_by_slug(self, category_slug: str) -> Category:
         try:
@@ -59,17 +59,17 @@ class PostAttrsMixin:
             raise Http404(f'Категория {category_slug} не найдена')
 
 
-class PostEditMixin:
-    form_class = PostCreationForm
-    model = Post
+class ArticleEditMixin:
+    form_class = ArticleCreationForm
+    model = Article
     success_url = None
-    template_name = 'posts/edit/create_form.html'
+    template_name = 'articles/edit/create_form.html'
 
     def form_valid(self, form):
         form.instance.author = self.request.user
         return super().form_valid(form)
 
     def get_success_url(self):
-        self.success_url = reverse_lazy('blog:post_edit',
-                                        kwargs={'post_id': self.object.id})
+        self.success_url = reverse_lazy('blog:article_edit',
+                                        kwargs={'article_id': self.object.id})
         return super().get_success_url()

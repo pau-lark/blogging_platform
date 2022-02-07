@@ -22,14 +22,14 @@ class Category(models.Model):
         return self.title
 
 
-class PostPublishedManger(models.Manager):
+class ArticlePublishedManger(models.Manager):
     def get_queryset(self):
         return super().get_queryset().filter(status='published')
 
 
-class Post(models.Model):
+class Article(models.Model):
     objects = models.Manager()
-    published_manager = PostPublishedManger()
+    published_manager = ArticlePublishedManger()
 
     STATUS_CHOICES = (
         ('draft', 'Черновик'),
@@ -38,16 +38,16 @@ class Post(models.Model):
 
     category = models.ForeignKey(Category,
                                  on_delete=models.CASCADE,
-                                 related_name='posts',
+                                 related_name='articles',
                                  verbose_name='Категория')
     author = models.ForeignKey(settings.AUTH_USER_MODEL,
                                on_delete=models.CASCADE,
-                               related_name='posts',
+                               related_name='articles',
                                verbose_name='Автор')
     title = models.CharField(max_length=200,
                              verbose_name='Название')
     slug = models.SlugField(max_length=200)
-    preview_image = models.ImageField(upload_to='posts/%Y/%m/%d',
+    preview_image = models.ImageField(upload_to='articles/%Y/%m/%d',
                                       verbose_name='Изображение',
                                       blank=True)
     created = models.DateTimeField(auto_now=True)
@@ -57,7 +57,7 @@ class Post(models.Model):
                               choices=STATUS_CHOICES,
                               default='draft')
     users_like = models.ManyToManyField(CustomUser,
-                                        related_name='posts_like',
+                                        related_name='articles_like',
                                         verbose_name='Понравилось пользователям',
                                         blank=True)
 
@@ -77,14 +77,14 @@ class Post(models.Model):
 
     def get_absolute_url(self):
         return reverse(
-            'blog:post_detail', args=[self.id]
+            'blog:article_detail', args=[self.id]
         )
 
 
 class Content(models.Model):
-    post = models.ForeignKey(Post, on_delete=models.CASCADE,
-                             related_name='contents',
-                             verbose_name='Пост')
+    article = models.ForeignKey(Article, on_delete=models.CASCADE,
+                                related_name='contents',
+                                verbose_name='Статья')
     content_type = models.ForeignKey(ContentType,
                                      on_delete=models.CASCADE,
                                      limit_choices_to={
@@ -102,7 +102,7 @@ class Content(models.Model):
         verbose_name_plural = 'Контент'
 
     def __str__(self):
-        return f'{self.post.title} - {self._meta.model_name}'
+        return f'{self.article.title} - {self._meta.model_name}'
 
 
 class ModelNameMixin:
@@ -114,31 +114,31 @@ class Text(ModelNameMixin, models.Model):
     text = models.TextField(verbose_name='Текст')
 
     class Meta:
-        verbose_name = 'Текст поста'
-        verbose_name_plural = 'Тексты поста'
+        verbose_name = 'Текст статьи'
+        verbose_name_plural = 'Тексты статьи'
 
 
 class Image(ModelNameMixin, models.Model):
-    image = models.ImageField(upload_to='posts/%Y/%m/%d',
+    image = models.ImageField(upload_to='articles/%Y/%m/%d',
                               verbose_name='Изображение')
 
     class Meta:
-        verbose_name = 'Картинка поста'
-        verbose_name_plural = 'Картинки поста'
+        verbose_name = 'Картинка статьи'
+        verbose_name_plural = 'Картинки статьи'
 
 
 class Video(ModelNameMixin, models.Model):
     url = models.URLField(verbose_name='URL видео')
 
     class Meta:
-        verbose_name = 'Видео поста'
-        verbose_name_plural = 'Видео поста'
+        verbose_name = 'Видео статьи'
+        verbose_name_plural = 'Видео статьи'
 
 
 class Comment(models.Model):
-    post = models.ForeignKey(Post, on_delete=models.CASCADE,
-                             related_name='comments',
-                             verbose_name='Пост')
+    article = models.ForeignKey(Article, on_delete=models.CASCADE,
+                                related_name='comments',
+                                verbose_name='Статья')
     author = models.ForeignKey(CustomUser, on_delete=models.CASCADE,
                                related_name='comments',
                                verbose_name='Автор комментария')

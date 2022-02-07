@@ -133,7 +133,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 # Login, logout, redirect urls
-LOGIN_REDIRECT_URL = 'blog:post_list'
+LOGIN_REDIRECT_URL = 'blog:article_list'
 LOGIN_URL = 'login'
 LOGOUT_URL = 'logout'
 
@@ -155,11 +155,11 @@ USER_RATING_BY_ACTION = {
     'init': 0,
     'add_subscriber': 10,
     'delete_subscriber': -10,
-    'create_post': 25,
-    'delete_post': -25
+    'create_article': 25,
+    'delete_article': -25
 }
 
-POST_RATING_BY_ACTION = {
+ARTICLE_RATING_BY_ACTION = {
     'init': 0,
     'view': 1,
     'like': 3,
@@ -167,15 +167,15 @@ POST_RATING_BY_ACTION = {
     'comment': 5
 }
 
-POST_FILTER_LIST = {
+ARTICLE_FILTER_LIST = {
     'all': 'Все',
     'subscriptions': 'Подписки'
 }
-POST_ORDER_LIST = {
+ARTICLE_ORDER_LIST = {
     'rating': 'По рейтингу',
     'date': 'Последние'
 }
-USER_POST_STATUS_FILTER_LIST = {
+USER_ARTICLE_STATUS_FILTER_LIST = {
     'publish': 'Публикации',
     'draft': 'Черновики'
 }
@@ -186,10 +186,10 @@ USER_FILTER_LIST = {
 }
 USER_ORDER_LIST = {
     'rating': 'По рейтингу',
-    'post_count': 'По количеству постов'
+    'article_count': 'По количеству постов'
 }
 
-POST_CONTENT_TYPES = {
+ARTICLE_CONTENT_TYPES = {
     'text': 'Текст',
     'image': 'Изображение',
     'video': 'Видео'

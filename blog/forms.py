@@ -1,4 +1,4 @@
-from .models import Post
+from .models import Article
 from django import forms
 from django.utils.safestring import mark_safe
 from PIL import Image
@@ -14,7 +14,7 @@ IMAGE_RESOLUTION = {
 }
 
 
-class PostCreationForm(forms.ModelForm):
+class ArticleCreationForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['preview_image'].help_text = mark_safe(
@@ -25,7 +25,7 @@ class PostCreationForm(forms.ModelForm):
             )
 
     class Meta:
-        model = Post
+        model = Article
         fields = ('category', 'title', 'preview_image')
         widgets = {
             'preview_image': forms.FileInput(attrs={'onchange': 'loadImage(event)'})

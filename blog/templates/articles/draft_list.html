@@ -11,23 +11,23 @@
                 <span class="text-muted">Черновики пользователя</span>
                 <a class="link-dark" href="{% url 'user_profile' username %}">{{ username }}</a>
             </h2>
-            {% for post in posts %}
+            {% for article in articles %}
                 <div class="card mb-4">
-                    {% if post.preview_image %}
-                        {% thumbnail post.preview_image "850x500" crop="100%" as thumb_img %}
+                    {% if article.preview_image %}
+                        {% thumbnail article.preview_image "850x500" crop="100%" as thumb_img %}
                             <img class="card-img-top" src="{{ thumb_img.url }}" alt=""/>
                         {% endthumbnail %}
                     {% else %}
                         <img class="card-img-top" src="https://dummyimage.com/850x500/dee2e6/6c757d.jpg" alt="..." />
                     {% endif %}
                     <div class="card-body">
-                        <div class="small text-muted">{{ post.published }}</div>
-                        <h2 class="card-title">{{ post.title }}</h2>
-                        <p class="card-text">{{ post.preview_content|truncatewords:40 }}</p>
+                        <div class="small text-muted">{{ article.published }}</div>
+                        <h2 class="card-title">{{ article.title }}</h2>
+                        <p class="card-text">{{ article.preview_content|truncatewords:40 }}</p>
                         <hr>
                         <div>
-                            <a class="btn btn-dark w-25" href="{% url 'blog:post_edit' post.id %}">Изменить</a>
-                            <a class="btn btn-dark w-25" href="{% url 'blog:post_delete' post.id %}">Удалить</a>
+                            <a class="btn btn-dark w-25" href="{% url 'blog:article_edit' article.id %}">Изменить</a>
+                            <a class="btn btn-dark w-25" href="{% url 'blog:article_delete' article.id %}">Удалить</a>
                         </div>
                     </div>
                 </div>
@@ -37,7 +37,7 @@
         </div>
 
         <div class="col-lg-4 px-4">
-            {% include 'posts/sidebar_widgets/post_status_widget.html' %}
+            {% include 'articles/sidebar_widgets/article_status_widget.html' %}
         </div>
     </div>
 {% endblock %}

@@ -1,15 +1,15 @@
 <h3>Категории</h3>
 <div class="card mb-4">
     <div class="list-group list-group-flush selected">
-        <a class="link-dark list-group-item-action list-group-item-dark p-2 px-4
+        <a class="list-group-item list-group-item-action list-group-item-dark p-2 px-4
                     {% if not category %}active{% endif %}"
-            href="{% url 'blog:post_list' %}?filter={{ filter }}&order={{ order }}">
+            href="{% url 'blog:users_article_list' username %}?filter={{ filter }}&order={{ order }}">
                 Все статьи
         </a>
         {% for category_item in categories %}
-            <a class="link-dark list-group-item-action list-group-item-dark p-2 px-4
+            <a class="list-group-item list-group-item-action list-group-item-dark p-2 px-4
                         {% if category_item == category %}active{% endif %}"
-                href="{% url 'blog:post_list_by_category' category_item.slug %}?filter={{ filter }}&order={{ order }}">
+                href="{% url 'blog:users_article_list_by_category' username category_item.slug %}?filter={{ filter }}&order={{ order }}">
                     {{ category_item.title }}
             </a>
         {% endfor %}

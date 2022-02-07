@@ -2,7 +2,7 @@ $(document).ready(function(){
     $('a.subscription').click(function(e){
         e.preventDefault();
         let username = $(this).data('name');
-        $.post('/accounts/subscribe/', {
+        $.article('/accounts/subscribe/', {
             'username': username,
             'action': $(this).data('action')
         },
