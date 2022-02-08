@@ -2,7 +2,7 @@ $(document).ready(function(){
     let aLike = $('a.like');
     aLike.click(function(e){
         e.preventDefault();
-        $.article('/blog/like/', {
+        $.post('/blog/like/', {
             'article_id': aLike.data('article_id'),
             'action': aLike.data('action')
         },

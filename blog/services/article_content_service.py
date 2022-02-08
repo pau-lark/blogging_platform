@@ -1,16 +1,19 @@
 from ..models import Article, Content, Text, Image, Video
 from .article_range_service import get_article_object
+from .article_rating_service import ArticlesRating
 from account.services.rating_service import UsersRating
 from account.services.decorators import query_debugger
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.http import Http404
 from django.template.loader import render_to_string
+from django.utils import timezone
 from typing import Union
 import logging.config
 
 
-RATING = UsersRating()
+USERS_RATING = UsersRating()
+ARTICLES_RATING = ArticlesRating()
 
 logging.config.dictConfig(settings.LOGGING)
 LOGGER = logging.getLogger('blog_logger')
@@ -22,7 +25,7 @@ def get_text_preview_for_article(article: Article) -> str:
     try:
         return preview_content.content_object.text
     except AttributeError:
-        LOGGER.error(f'article {article.id}, content {preview_content.id}, text not found')
+        LOGGER.warning(f'article {article.id}, text not found')
         return ''
 
 
@@ -94,15 +97,17 @@ def delete_all_article_content(article_id: int) -> None:
     article = get_article_object(article_id)
     for content in article.contents.all():
         content.content_object.delete()
-    RATING.incr_or_decr_rating_by_id(action='delete_article',
-                                     object_id=article.author.id)
-    RATING.clear_rating_by_id(object_id=article_id)
+    if article.status == 'published':
+        USERS_RATING.incr_or_decr_rating_by_id(action='delete_article',
+                                               object_id=article.author.id)
+    ARTICLES_RATING.clear_rating_by_id(object_id=article_id)
 
 
 def publish_article(article_id: int) -> None:
     """Меняет статус статьи на "опубликовано", добавляет рейтинг пользователю"""
     article = get_article_object(article_id)
     article.status = 'published'
+    article.published = timezone.now()
     article.save()
-    RATING.incr_or_decr_rating_by_id(action='create_article',
-                                     object_id=article.author.id)
+    USERS_RATING.incr_or_decr_rating_by_id(action='create_article',
+                                           object_id=article.author.id)

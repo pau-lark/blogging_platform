@@ -66,7 +66,7 @@
                     <h3 class="m-2">Комментарии ({{ article.comments_count }}):</h3>
                     <div class="card-body">
                         <!-- Comment form-->
-                        <form class="mb-4" method="article" action=".">
+                        <form class="mb-4" method="post" action=".">
                             {% csrf_token %}
                             {{ form.body|as_crispy_field }}
                             <input class="btn btn-outline-dark mt-2" type="submit" value="Отправить">

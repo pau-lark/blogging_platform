@@ -25,11 +25,6 @@ from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 
 
-def index(request):
-    form = SearchForm()
-    return render(request, 'base.html', {'search_form': form})
-
-
 class ArticleListBaseView(PaginatorMixin, ArticleAttrsMixin, View):
     """
     Базовая view для вывода фильтрованного списка статей для
@@ -191,19 +186,17 @@ class ArticleUpdateView(LoginRequiredMixin, ArticleEditMixin, UpdateView):
 class ArticleDeleteView(LoginRequiredMixin, DeleteView):
     model = Article
     pk_url_kwarg = 'article_id'
-    success_url = None
     template_name = 'articles/edit/delete_form.html'
 
-    def delete(self, request, *args, **kwargs):
-        delete_all_article_content(kwargs.get('article_id'))
-        return super().delete(request, *args, **kwargs)
+    def form_valid(self, form):
+        delete_all_article_content(self.kwargs.get(self.pk_url_kwarg))
+        return super().form_valid(form)
 
     def get_success_url(self):
-        self.success_url = reverse_lazy(
+        return reverse_lazy(
             'blog:users_article_list',
             kwargs={'username': self.request.user.username}
         )
-        return super().get_success_url()
 
 
 class ArticlePreviewEditView(LoginRequiredMixin, View):
