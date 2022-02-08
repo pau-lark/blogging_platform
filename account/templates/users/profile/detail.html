@@ -48,7 +48,7 @@
                     <hr>
                     <h2>{{ user.first_name }}</h2>
                     <h2>{{ user.last_name }}</h2>
-                    <h4 class="text-muted my-4">Рейтинг: {{ user.rating }}</h4>
+                    <h4 class="text-muted my-4">Рейтинг: {{ user.get_user_rating }}</h4>
                 </div>
             </div>
             {% if user.about %}

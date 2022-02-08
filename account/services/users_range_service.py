@@ -1,24 +1,26 @@
 from ..models import CustomUser
-from .decorators import query_debugger
 from .rating_service import UsersRating
+from django.conf import settings
 from django.db.models.query import QuerySet
 from django.db.models import Count
 from django.http import Http404
-from django.shortcuts import get_object_or_404
+import logging.config
 
 
-@query_debugger
+logging.config.dictConfig(settings.LOGGING)
+LOGGER = logging.getLogger('account_logger')
+
+
 def get_user_object(username: str) -> CustomUser:
     """Получаем пользователя по имени"""
     try:
-        user = get_object_or_404(CustomUser, username=username)
+        user = CustomUser.objects.get(username=username)
     except CustomUser.DoesNotExist:
-        # TODO: и пишем в лог
+        LOGGER.error(f'User {username} not found')
         raise Http404(f'Пользователь {username} не найден')
     return user
 
 
-@query_debugger
 def get_filtered_user_list(username: str, filter_by: str) -> QuerySet[CustomUser]:
     """
     Получаем qs пользователей, в зависимости от фильтра
@@ -48,8 +50,7 @@ def _get_order_by_rating(user_list: QuerySet[CustomUser]) -> list:
             key=lambda user: users_sorted_by_rating_ids.index(user.id)
         )
     except ValueError as e:
-        # в лог
-        pass
+        LOGGER.warning(f'Rating sort error of user list {user_list}. Some users have not rating')
     return user_list
 
 
@@ -58,7 +59,6 @@ def _get_order_by_article_count(user_list: QuerySet[CustomUser]) -> QuerySet[Cus
     return user_list.annotate(articles_count=Count('articles')).order_by('-articles_count')
 
 
-@query_debugger
 def _get_sorted_user_list(user_list: QuerySet[CustomUser], order_by: str):
     """
     Получаем отсортированный qs пользователей

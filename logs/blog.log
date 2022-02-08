@@ -47,3 +47,5 @@ ERROR 2022-02-08 18:31:33,858 article_content_service article 6, text not found
 ERROR 2022-02-08 18:34:53,958 article_content_service article 6, text not found
 WARNING 2022-02-08 18:42:54,682 article_content_service article 10, text not found
 ERROR 2022-02-08 18:59:22,254 article_range_service article None not found
+WARNING 2022-02-08 22:44:46,150 article_content_service article 14, text not found
+WARNING 2022-02-08 22:44:51,122 article_content_service article 14, text not found

@@ -1,4 +1,3 @@
-from .forms import SearchForm
 from .models import Article, Comment
 from .services.article_content_service import \
     get_text_preview_for_article,\
@@ -189,6 +188,7 @@ class ArticleDeleteView(LoginRequiredMixin, DeleteView):
     template_name = 'articles/edit/delete_form.html'
 
     def form_valid(self, form):
+        """Удаляет содержимое статьи"""
         delete_all_article_content(self.kwargs.get(self.pk_url_kwarg))
         return super().form_valid(form)
 
@@ -200,6 +200,13 @@ class ArticleDeleteView(LoginRequiredMixin, DeleteView):
 
 
 class ArticlePreviewEditView(LoginRequiredMixin, View):
+    """
+    View для вывода превью создаваемой статьи
+    с возможностью изменить шапку статьи или
+    добавить, изменить, удалить элементы контента
+    """
+    template_name = 'articles/edit/preview.html'
+
     @query_debugger
     def get(self, request: HttpRequest, article_id: int) -> HttpResponse:
         article = get_article_object(article_id)
@@ -210,10 +217,13 @@ class ArticlePreviewEditView(LoginRequiredMixin, View):
             'contents': contents,
             'content_types': settings.ARTICLE_CONTENT_TYPES
         }
-        return render(request, 'articles/edit/preview.html', context)
+        return render(request, self.template_name, context)
 
 
 class ContentCreateUpdateView(LoginRequiredMixin, View):
+    """
+
+    """
     model = None
     content_object = None
     template_name = 'articles/content/form.html'
@@ -265,11 +275,16 @@ class ContentDeleteView(LoginRequiredMixin, View):
 
 
 def publish_article_view(request: HttpRequest, article_id: int) -> HttpResponse:
+    """Публикует статью с через соответствующую функцию"""
     publish_article(article_id)
     return redirect('blog:users_article_list', request.user.username)
 
 
 class ArticleLikeView(LoginRequiredMixin, View):
+    """
+    Обработчик ajax-запроса, ставящий или убирающий лайк,
+    в зависимости от значения 'action' (like/unlike)
+    """
     def post(self, request):
         article_id = request.POST.get('article_id')
         action = request.POST.get('action')

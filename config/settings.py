@@ -36,6 +36,7 @@ INSTALLED_APPS = [
 
     'crispy_forms',
     'sorl.thumbnail',
+    'embed_video',
 
     'blog.apps.BlogConfig'
 ]

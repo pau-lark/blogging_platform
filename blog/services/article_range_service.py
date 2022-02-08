@@ -1,6 +1,5 @@
 from ..models import Article
 from .article_rating_service import ArticlesRating
-from account.services.decorators import query_debugger
 from account.services.users_range_service import get_filtered_user_list
 from django.conf import settings
 from django.db.models.query import QuerySet
@@ -12,7 +11,6 @@ logging.config.dictConfig(settings.LOGGING)
 LOGGER = logging.getLogger('blog_logger')
 
 
-@query_debugger
 def get_article_object(article_id: int) -> Article:
     """Получаем пост по id"""
     try:
@@ -23,8 +21,7 @@ def get_article_object(article_id: int) -> Article:
     return article
 
 
-@query_debugger
-def get_article_list_by_category(category_slug: str) -> QuerySet[Article]:
+def _get_article_list_by_category(category_slug: str) -> QuerySet[Article]:
     """
     Возвращает qs постов по категории.
     Если категория не задана, возвращает все посты
@@ -35,7 +32,6 @@ def get_article_list_by_category(category_slug: str) -> QuerySet[Article]:
     return Article.published_manager.prefetch_related('users_like', 'comments').all()
 
 
-@query_debugger
 def _get_filtered_article_list(username: str, category_slug: str, filter_by: str) -> QuerySet[Article]:
     """
     Получаем qs статей, в зависимости от категории и фильтра
@@ -45,7 +41,7 @@ def _get_filtered_article_list(username: str, category_slug: str, filter_by: str
         'publish' - все опубликованные статьи конкретного пользователя;
         'draft' - свои черновики.
     """
-    articles = get_article_list_by_category(category_slug)
+    articles = _get_article_list_by_category(category_slug)
     if username:
         if filter_by == 'subscriptions':
             subscription_user_list = get_filtered_user_list(username, filter_by)
@@ -80,7 +76,6 @@ def _get_order_by_date(article_list: QuerySet[Article]) -> QuerySet[Article]:
     return article_list.order_by('-published')
 
 
-@query_debugger
 def _get_sorted_article_list(article_list: QuerySet[Article], order_by: str):
     """
     Получаем отсортированный qs постов
