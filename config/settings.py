@@ -220,29 +220,20 @@ LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'formatters': {
-        'console_formatter': {
-            'format': '{levelname} {module} {message}',
-            'style': '{',
-        },
         'file_formatter': {
             'format': '{levelname} {asctime} {module} {message}',
             'style': '{',
         },
     },
     'handlers': {
-        'console': {
-            'level': 'INFO',
-            'class': 'logging.StreamHandler',
-            'formatter': 'console_formatter',
-        },
         'account_file': {
-            'level': 'DEBUG',
+            'level': 'WARNING',
             'class': 'logging.FileHandler',
             'filename': f'{LOG_DIR}/account.log',
             'formatter': 'file_formatter',
         },
         'blog_file': {
-            'level': 'DEBUG',
+            'level': 'WARNING',
             'class': 'logging.FileHandler',
             'filename': f'{LOG_DIR}/blog.log',
             'formatter': 'file_formatter',
@@ -250,13 +241,13 @@ LOGGING = {
     },
     'loggers': {
         'account_logger': {
-            'handlers': ['console', 'account_file'],
-            'level': 'DEBUG',
+            'handlers': ['account_file'],
+            'level': 'WARNING',
             'propagate': True,
         },
         'blog_logger': {
-            'handlers': ['console', 'blog_file'],
-            'level': 'DEBUG',
+            'handlers': ['blog_file'],
+            'level': 'WARNING',
             'propagate': True,
         },
     },
