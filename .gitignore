@@ -7,8 +7,6 @@ __pycache__/
 !*media/.gitkeep
 media/*
 
-db.sqlite3
-
 !*logs/.gitkeep
 logs/*
 
