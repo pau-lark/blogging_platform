@@ -4,10 +4,7 @@
 __pycache__/
 */__pycashe__/
 
-!*media/.gitkeep
-media/*
-
-!*logs/.gitkeep
-logs/*
+logs/**
+media/**
 
 .env
