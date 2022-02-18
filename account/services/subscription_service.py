@@ -21,19 +21,29 @@ def subscribe_user(from_user: CustomUser, to_user_username: str, action: str) ->
     """
     to_user = get_user_object(to_user_username)
     if action == 'add':
-        Subscription.objects.get_or_create(from_user=from_user,
-                                           to_user=to_user)
-        RATING.incr_or_decr_rating_by_id(action='add_subscriber',
-                                         object_id=to_user.id)
-    else:
-        try:
-            Subscription.objects.get(from_user=from_user,
-                                     to_user=to_user).delete()
-            RATING.incr_or_decr_rating_by_id(action='delete_subscriber',
+        if from_user not in to_user.subscribers.all():
+            Subscription.objects.create(from_user=from_user,
+                                        to_user=to_user)
+            RATING.incr_or_decr_rating_by_id(action='add_subscriber',
                                              object_id=to_user.id)
-        except Subscription.DoesNotExist:
-            LOGGER.error(f'delete subscription error from {from_user} to {to_user}.'
-                         f'Relation does not exist')
+        else:
+            LOGGER.warning(f'can not create relation: '
+                           f'user {from_user} already subscribed to {to_user}.')
+            return False
+    else:
+        if from_user in to_user.subscribers.all():
+            try:
+                Subscription.objects.get(from_user=from_user,
+                                         to_user=to_user).delete()
+                RATING.incr_or_decr_rating_by_id(action='delete_subscriber',
+                                                 object_id=to_user.id)
+            except Subscription.DoesNotExist:
+                LOGGER.error(f'delete subscription error from {from_user} to {to_user}.'
+                             f'Relation does not exist')
+                return False
+        else:
+            LOGGER.warning(f'can not delete relation: '
+                           f'user {from_user} is not subscribed to {to_user}.')
             return False
     return True
 

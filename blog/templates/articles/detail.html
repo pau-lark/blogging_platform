@@ -66,11 +66,13 @@
                     <h3 class="m-2">Комментарии ({{ article.comments_count }}):</h3>
                     <div class="card-body">
                         <!-- Comment form-->
-                        <form class="mb-4" method="post" action=".">
-                            {% csrf_token %}
-                            {{ form.body|as_crispy_field }}
-                            <input class="btn btn-outline-dark mt-2" type="submit" value="Отправить">
-                        </form>
+                        {% if request.user.is_authenticated %}
+                            <form class="mb-4" method="post" action=".">
+                                {% csrf_token %}
+                                {{ form.body|as_crispy_field }}
+                                <input class="btn btn-outline-dark mt-2" type="submit" value="Отправить">
+                            </form>
+                        {% endif %}
                         <!-- Comment-->
                         {% for comment in article.comments.all %}
                         <div class="d-flex mb-4">
@@ -114,7 +116,7 @@
                         <td>Рейтинг: </td>
                         <td>{{ user.get_user_rating }}</td>
                     </tr>
-                    {% if user != request.user %}
+                    {% if user != request.user and request.user.is_authenticated %}
                         <tr>
                             <td colspan="2">
                                 {% with subscriptions=request.user.subscriptions.all %}

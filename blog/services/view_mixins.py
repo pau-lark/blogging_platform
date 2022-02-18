@@ -1,7 +1,6 @@
 from ..forms import ArticleCreationForm
 from ..models import Article, Category
 from .article_rating_service import ArticlesRating, ArticleViewCounter
-from account.services.decorators import query_debugger
 from django.conf import settings
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.http import Http404
@@ -37,7 +36,6 @@ class ArticleAttrsMixin:
     article_view_counter = ArticleViewCounter()
     rating = ArticlesRating()
 
-    @query_debugger
     def get_article_content_and_attrs(self, article: Article) -> Article:
         article.rating = self.rating.get_rating_by_id(article.id)
         article.view_count = self.article_view_counter.get_article_view_count(article.id)

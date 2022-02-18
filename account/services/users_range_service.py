@@ -21,6 +21,15 @@ def get_user_object(username: str) -> CustomUser:
     return user
 
 
+def get_filtered_and_sorted_user_list(
+        username: str,
+        filter_by: str = 'all',
+        order_by: str = 'rating') -> QuerySet[CustomUser]:
+    """Вызывает функции фильтрации и сортировки пользователей"""
+    users = get_filtered_user_list(username, filter_by)
+    return _get_sorted_user_list(users, order_by)
+
+
 def get_filtered_user_list(username: str, filter_by: str) -> QuerySet[CustomUser]:
     """
     Получаем qs пользователей, в зависимости от фильтра
@@ -36,6 +45,19 @@ def get_filtered_user_list(username: str, filter_by: str) -> QuerySet[CustomUser
         user = get_user_object(username)
         return user.subscribers.prefetch_related('articles').all()
     return CustomUser.objects.prefetch_related('articles').exclude(username=username)
+
+
+def _get_sorted_user_list(user_list: QuerySet[CustomUser], order_by: str):
+    """
+    Получаем отсортированный qs пользователей
+    Значения order_by:
+        'rating' - сортировать по рейтингу;
+        'article_count' - сортировать по количеству постов.
+    """
+    if order_by == 'rating':
+        return _get_order_by_rating(user_list)
+    elif order_by == 'article_count':
+        return _get_order_by_article_count(user_list)
 
 
 def _get_order_by_rating(user_list: QuerySet[CustomUser]) -> list:
@@ -57,25 +79,3 @@ def _get_order_by_rating(user_list: QuerySet[CustomUser]) -> list:
 def _get_order_by_article_count(user_list: QuerySet[CustomUser]) -> QuerySet[CustomUser]:
     """Возвращает список пользователей, отсортированный по количеству постов"""
     return user_list.annotate(articles_count=Count('articles')).order_by('-articles_count')
-
-
-def _get_sorted_user_list(user_list: QuerySet[CustomUser], order_by: str):
-    """
-    Получаем отсортированный qs пользователей
-    Значения order_by:
-        'rating' - сортировать по рейтингу;
-        'article_count' - сортировать по количеству постов.
-    """
-    if order_by == 'rating':
-        return _get_order_by_rating(user_list)
-    elif order_by == 'article_count':
-        return _get_order_by_article_count(user_list)
-
-
-def get_filtered_and_sorted_user_list(
-        username: str,
-        filter_by: str = 'all',
-        order_by: str = 'rating') -> QuerySet[CustomUser]:
-    """Вызывает функции фильтрации и сортировки пользователей"""
-    users = get_filtered_user_list(username, filter_by)
-    return _get_sorted_user_list(users, order_by)

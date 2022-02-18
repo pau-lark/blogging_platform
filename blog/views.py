@@ -8,12 +8,11 @@ from .services.article_content_service import \
     delete_article_content_by_id,\
     publish_article,\
     delete_all_article_content
-from .services.article_like_service import like_article
+from .services.article_like_service import like_or_unlike_article
 from .services.article_range_service import \
     get_filtered_and_sorted_article_list,\
     get_article_object
 from .services.view_mixins import PaginatorMixin, ArticleEditMixin, ArticleAttrsMixin
-from account.services.decorators import query_debugger
 from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.forms.models import modelform_factory
@@ -42,7 +41,6 @@ class ArticleListBaseView(PaginatorMixin, ArticleAttrsMixin, View):
     filter_by = None
     order_by = None
 
-    @query_debugger
     def get(self, request: HttpRequest, username: str = None,
             category_slug: str = None) -> HttpResponse:
 
@@ -68,7 +66,6 @@ class ArticleListBaseView(PaginatorMixin, ArticleAttrsMixin, View):
 
         return render(request, self.template_name, self.get_context_data())
 
-    @query_debugger
     def get_article_content_and_attrs(self, article: Article) -> Article:
         article.preview_content = get_text_preview_for_article(article)
         return super().get_article_content_and_attrs(article)
@@ -136,16 +133,16 @@ class ArticleDetailView(ArticleAttrsMixin, View):
         self.article = self.get_article_content_and_attrs(self.article)
         return super().dispatch(request, **kwargs)
 
-    @query_debugger
     def get(self, request: HttpRequest, article_id: int) -> HttpResponse:
         self.change_article_views(article_id)
         form = self.get_comment_form()
         return render(request, self.template_name, self.get_context_data(form))
 
     def post(self, request: HttpRequest, article_id: int) -> HttpResponse:
+        """Добавление комментария"""
         form = self.get_comment_form(data=request.POST,
                                      files=request.FILES)
-        if form.is_valid():
+        if form.is_valid() and request.user.is_authenticated:
             comment = form.save(commit=False)
             comment.article = self.article
             comment.author = request.user
@@ -156,6 +153,10 @@ class ArticleDetailView(ArticleAttrsMixin, View):
         return render(request, self.template_name, self.get_context_data(form))
 
     def get_article_content_and_attrs(self, article: Article) -> Article:
+        """
+        Переопределяем метод ArticleAttrsMixin для добавления
+        к статье отрендеренного содержимого
+        """
         article.content_list = get_article_render_contents(article)
         return super().get_article_content_and_attrs(article)
 
@@ -207,7 +208,6 @@ class ArticlePreviewEditView(LoginRequiredMixin, View):
     """
     template_name = 'articles/edit/preview.html'
 
-    @query_debugger
     def get(self, request: HttpRequest, article_id: int) -> HttpResponse:
         article = get_article_object(article_id)
         contents = get_article_render_contents(article)
@@ -221,18 +221,21 @@ class ArticlePreviewEditView(LoginRequiredMixin, View):
 
 
 class ContentCreateUpdateView(LoginRequiredMixin, View):
-    """
-
-    """
+    """Добавление, изменение содержимого статьи"""
     model = None
     content_object = None
     template_name = 'articles/content/form.html'
 
     def get_form(self, **kwargs):
+        """Генерация формы, в зависимости от типа контента"""
         form = modelform_factory(self.model, exclude=[])
         return form(**kwargs)
 
     def dispatch(self, request, **kwargs):
+        """
+        Получение модели, соответствующей типу контента,
+        получение объекта контента для изменения
+        """
         model_name = kwargs.get('model_name')
         if model_name:
             self.model = get_model_by_name(model_name)
@@ -251,6 +254,10 @@ class ContentCreateUpdateView(LoginRequiredMixin, View):
         return render(request, self.template_name, context)
 
     def post(self, request: HttpRequest, **kwargs) -> HttpResponse:
+        """
+        Сохранение объекта контента,
+        добавление связи со статьей в случае нового объекта
+        """
         article_id = kwargs.get('article_id')
         form = self.get_form(instance=self.content_object,
                              data=request.POST,
@@ -289,6 +296,6 @@ class ArticleLikeView(LoginRequiredMixin, View):
         article_id = request.POST.get('article_id')
         action = request.POST.get('action')
         if article_id and action:
-            if like_article(request.user, article_id, action):
+            if like_or_unlike_article(request.user, article_id, action):
                 return JsonResponse({'status': 'ok'})
         return JsonResponse({'status': ''})

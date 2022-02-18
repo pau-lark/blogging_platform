@@ -3,22 +3,22 @@ from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from .models import CustomUser
 
 
-# Переопределение форм создания и изменения юзера
 class CustomUserCreationForm(UserCreationForm):
-
+    """Переопределение admin-формы создания пользователя"""
     class Meta(UserCreationForm.Meta):
         model = CustomUser
         fields = UserCreationForm.Meta.fields + ('birth_date', 'photo')
 
 
 class CustomUserChangeForm(UserChangeForm):
-
+    """Переопределение admin-формы изменения пользователя"""
     class Meta:
         model = CustomUser
         fields = ['username', 'email', 'photo']
 
 
 class RegisterForm(forms.ModelForm):
+    """Форма регистрации пользователя"""
     password = forms.CharField(widget=forms.PasswordInput, label='Пароль')
     password2 = forms.CharField(widget=forms.PasswordInput, label='Повторите пароль')
 

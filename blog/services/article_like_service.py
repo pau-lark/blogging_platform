@@ -11,7 +11,7 @@ LOGGER = logging.getLogger('blog_logger')
 RATING = ArticlesRating()
 
 
-def like_article(user, article_id: int, action: str) -> bool:
+def like_or_unlike_article(user, article_id: int, action: str) -> bool:
     """
     Функция ставит или убирает лайк статье
     в зависимости от значения 'action' (like/unlike)
@@ -21,13 +21,15 @@ def like_article(user, article_id: int, action: str) -> bool:
     try:
         article = get_article_object(int(article_id))
         if action == 'like':
-            article.users_like.add(user)
-            RATING.incr_or_decr_rating_by_id(action='like',
-                                             object_id=article_id)
+            if user not in article.users_like.all():
+                article.users_like.add(user)
+                RATING.incr_or_decr_rating_by_id(action='like',
+                                                 object_id=article_id)
         else:
-            article.users_like.remove(user)
-            RATING.incr_or_decr_rating_by_id(action='unlike',
-                                             object_id=article_id)
+            if user in article.users_like.all():
+                article.users_like.remove(user)
+                RATING.incr_or_decr_rating_by_id(action='unlike',
+                                                 object_id=article_id)
         return True
     except Article.DoesNotExist:
         LOGGER.error(f'like/unlike error, article {article_id} not found')

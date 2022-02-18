@@ -52,7 +52,7 @@ class Article(models.Model):
                                       blank=True)
     created = models.DateTimeField(auto_now=True)
     updated = models.DateTimeField(auto_now_add=True)
-    published = models.DateTimeField(default=timezone.now())
+    published = models.DateTimeField(null=True)
     status = models.CharField(max_length=10,
                               choices=STATUS_CHOICES,
                               default='draft')

@@ -2,7 +2,6 @@ from ..models import Article, Content, Text, Image, Video
 from .article_range_service import get_article_object
 from .article_rating_service import ArticlesRating
 from account.services.rating_service import UsersRating
-from account.services.decorators import query_debugger
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.http import Http404
@@ -40,7 +39,6 @@ def delete_article_content_by_id(content_id: int) -> None:
     content.delete()
 
 
-@query_debugger
 def get_article_render_contents(article: Article) -> list[tuple]:
     """
     Функция генерирует шаблон для каждого контент-объекта статьи,
